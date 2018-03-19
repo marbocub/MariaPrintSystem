@@ -1,0 +1,11 @@
+*.suo
+.vs
+/x64/
+/Debug/
+/Release/
+/MariaPrintPort/x64/
+/MariaPrintPort/Debug/
+/MariaPrintPort/Release/
+/MariaPrintUI/x64/
+/MariaPrintUI/Debug/
+/MariaPrintUI/Release/
