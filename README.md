@@ -33,6 +33,7 @@ The program Icon
 ================
 
 The Icon made by [Freepik][1] from [www.flaticon.com][2] is licensed by [CC 3.0 BY][3].
+
 [1]: http://www.freepik.com/
 [2]: https://www.flaticon.com/
 [3]: http://creativecommons.org/licenses/by/3.0/
