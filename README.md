@@ -13,13 +13,19 @@ This program is worked on Windows with .NET 3.0 and later. I have developed by u
 Implemented
 -----------
 
-    Tasktray icon/program for ps files watcher and the application kicker.
+    Tasktray icon/program for virtual spool watcher and the preview application kicker.
     Print Preview/Management UI for preview virtual spools and print to a real printer.
 
 Under the developing
 --------------------
 
     Many
+
+Settings
+--------
+
+    reg add "HKLM\SOFTWARE\Marbocub\MariaPrintSystem" /v "PsShell" /t REG_SZ /d "MariaPrintManager.exe" /f
+    reg add "HKLM\SOFTWARE\Marbocub\MariaPrintSystem" /v "Printer" /t REG_SZ /d "Your Real Printer" /f
 
 License
 =======
