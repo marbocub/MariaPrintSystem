@@ -4,6 +4,7 @@ What is this?
 =============
 
 This is a printer port monitor for Windows which redirects print data stream to a file named automatically generated.
+This program works with [MariaPrintSystem][1].
 
 Requirements and Limitations
 ============================
@@ -49,3 +50,5 @@ Copyright (c) 2018 @marbocub <marbocub@gmail.com>, All rights reserved.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation, see https://www.gnu.org/licenses/.
+
+[1]: https://github.com/marbocub/MariaPrintSystem
