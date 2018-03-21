@@ -4,6 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaPrintTray", "MariaPrintTray\MariaPrintTray.csproj", "{AED349DD-081C-488B-993F-6CA2D22BF312}"
+	ProjectSection(ProjectDependencies) = postProject
+		{333760D8-6FEE-44FF-BD20-0CF4F86994FC} = {333760D8-6FEE-44FF-BD20-0CF4F86994FC}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaPrintManager", "MariaPrintManager\MariaPrintManager.csproj", "{333760D8-6FEE-44FF-BD20-0CF4F86994FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,10 @@ Global
 		{AED349DD-081C-488B-993F-6CA2D22BF312}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AED349DD-081C-488B-993F-6CA2D22BF312}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AED349DD-081C-488B-993F-6CA2D22BF312}.Release|Any CPU.Build.0 = Release|Any CPU
+		{333760D8-6FEE-44FF-BD20-0CF4F86994FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{333760D8-6FEE-44FF-BD20-0CF4F86994FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{333760D8-6FEE-44FF-BD20-0CF4F86994FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{333760D8-6FEE-44FF-BD20-0CF4F86994FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

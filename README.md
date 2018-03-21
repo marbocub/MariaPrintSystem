@@ -8,12 +8,13 @@ This is a print management system for Windows based on V3 printer model.
 Requirements and Limitations
 ============================
 
-This program is worked on Windows with .NET 2.0 and later. I have developed by using Visual Studio 2017.
+This program is worked on Windows with .NET 3.0 and later. I have developed by using Visual Studio 2017.
 
 Implemented
 -----------
 
     Tasktray icon/program for ps files watcher and the application kicker.
+    Print Preview/Management UI for preview virtual spools and print to a real printer.
 
 Under the developing
 --------------------
