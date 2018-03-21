@@ -8,12 +8,12 @@ This is a print management system for Windows based on V3 printer model.
 Requirements and Limitations
 ============================
 
-This program worked Windows with .NET 2.0 and later.
+This program is worked on Windows with .NET 2.0 and later. I have developed by using Visual Studio 2017.
 
 Implemented
 -----------
 
-    Task tray icon/program for ps files watcher and the application kicker.
+    Tasktray icon/program for ps files watcher and the application kicker.
 
 Under the developing
 --------------------
