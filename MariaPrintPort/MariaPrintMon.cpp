@@ -20,6 +20,8 @@ WCHAR szDescription[] = L"Maria Redirecter";
 WCHAR szRegSettingKey[] = L"Settings";
 WCHAR szRegDirectory[] = L"OutputDirectory";
 WCHAR szRegTouchFinFile[] = L"TouchFinFile";
+WCHAR szRegFileExtension[] = L"FileExtension";
+#define MAX_EXTENSION_LENGTH 10
 
 // handle
 typedef struct _MARIAMONINI MARIAMONINI, *PMARIAMONINI;
@@ -318,6 +320,9 @@ BOOL WINAPI MariaEndDocPort(
 		DWORD dwTouchFinFile = 0;
 		DWORD cbTouchFinFile = sizeof(DWORD);
 		DWORD dwRegType = 0;
+		WCHAR szFileExtension[MAX_EXTENSION_LENGTH + 1] = { 0 };
+		DWORD cbFileExtension = (_countof(szFileExtension)) * sizeof(WCHAR);
+		BOOL bFileExtension = false;
 		if ((ERROR_SUCCESS == pPortIni->pMariaMonIni->pMonitorInit->pMonitorReg->fpCreateKey(
 			pPortIni->pMariaMonIni->pMonitorInit->hckRegistryRoot,
 			szRegSettingKey,
@@ -348,6 +353,26 @@ BOOL WINAPI MariaEndDocPort(
 						pPortIni->pMariaMonIni->pMonitorInit->hSpooler);
 				}
 			}
+			if (ERROR_SUCCESS == pPortIni->pMariaMonIni->pMonitorInit->pMonitorReg->fpQueryValue(
+				hKey,
+				szRegFileExtension,
+				&dwRegType,
+				NULL,
+				NULL,
+				pPortIni->pMariaMonIni->pMonitorInit->hSpooler))
+			{
+				if (REG_SZ == dwRegType)
+				{
+					pPortIni->pMariaMonIni->pMonitorInit->pMonitorReg->fpQueryValue(
+						hKey,
+						szRegFileExtension,
+						&dwRegType,
+						(BYTE*)szFileExtension,
+						&cbFileExtension,
+						pPortIni->pMariaMonIni->pMonitorInit->hSpooler);
+					bFileExtension = true;
+				}
+			}
 			pPortIni->pMariaMonIni->pMonitorInit->pMonitorReg->fpCloseKey(hKey, pPortIni->pMariaMonIni->pMonitorInit->hSpooler);
 		}
 		if (dwTouchFinFile != 0)
@@ -367,6 +392,17 @@ BOOL WINAPI MariaEndDocPort(
 			{
 				CloseHandle(hFile);
 			}
+		}
+		if (bFileExtension && wcsnlen_s(szFileExtension, _countof(szFileExtension) - 1) > 0)
+		{
+			WCHAR filePath[MAX_PATH + 1] = { 0 };
+			wcscpy_s(filePath, _countof(filePath), pPortIni->filePath);
+			if (wcsncmp(szFileExtension, L".", 1) != 0)
+			{
+				wcscat_s(filePath, _countof(filePath), L".");
+			}
+			wcscat_s(filePath, _countof(filePath), szFileExtension);
+			MoveFile(pPortIni->filePath, filePath);
 		}
 	}
 
