@@ -556,7 +556,7 @@ MONITOR2 mon2 = {
 	NULL				//SendRecvBidiDataFromPort
 };
 
-LPMONITOR2 InitializePrintMonitor2(_In_ PMONITORINIT pMonitorInit, _Out_ PHANDLE phMonitor)
+LPMONITOR2 WINAPI InitializePrintMonitor2(_In_ PMONITORINIT pMonitorInit, _Out_ PHANDLE phMonitor)
 {
 	PMARIAMONINI pMariaMonIni = (PMARIAMONINI)GlobalAlloc(GPTR, sizeof(MARIAMONINI));
 	pMariaMonIni->pMonitorInit = pMonitorInit;

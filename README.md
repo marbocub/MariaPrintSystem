@@ -1,21 +1,21 @@
 # MariaPrintSystem
 
-This is a print management system for Windows based on V3 printer model.
+This is a print accounting and management system for Windows based on V3 printer model.
 
 Subsystems
 ----------
 
-* MariaPrintPort is a port monitor redirects print data stream to a file named automatically generated. It using with a postscript virtual V3 printer can save postscript file to a directory. Here we call that directory the virtual spool.
+* MariaPrintMon is a port monitor that redirects the print data stream to a file with automatically generated name. When it use with a PostScript virtual printer, a PostScript file can be save in a directory. Here we call that directory the virtual spool.
 
-* MariaPrintTray is a tasktray icon/program monitor new files in the virtual spool and kickstart a program with arguments.
+* MariaPrintTray is a tasktray icon / program that monitors new files in the virtual spool and kickstart the preview program with the name of the created file as an argument.
 
-* MariaPrintManager is a preview and print program prints a postscript file in the virtual spool to a real printer. It supports authenticate a user and accounting by page count.
+* MariaPrintManager is a preview and print program for a PostScript file. It prints a PS file in the virtual spool to a real printer. It supports user interface for authenticate a user and accounting by page count.
 
 Requirements and Limitations
 ============================
 
 This program is worked on Windows with .NET 3.0 and later. 
-I have developed on Windows 10 version 1709.
+We have developed on Windows 10 version 1709.
 
 How to use it
 =============
