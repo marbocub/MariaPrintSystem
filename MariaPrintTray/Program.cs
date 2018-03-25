@@ -29,9 +29,10 @@ namespace MariaPrintTray
             FileSystemWatcher watcher1 = new FileSystemWatcher();
             watcher1.Path = path;
             watcher1.NotifyFilter = NotifyFilters.FileName;
-            watcher1.Filter = @"*.fin";
+            watcher1.Filter = @"*.ps";
             watcher1.EnableRaisingEvents = true;
             watcher1.Created += new FileSystemEventHandler(watcher1_Created);
+            watcher1.Renamed += new RenamedEventHandler(watcher1_Created);
 
             ContextMenuStrip menu1 = new ContextMenuStrip();
             ToolStripMenuItem menuItemAbout = new ToolStripMenuItem();
@@ -55,22 +56,13 @@ namespace MariaPrintTray
 
         private void watcher1_Created(object sender, FileSystemEventArgs e)
         {
-            string tmpFileName = Path.GetFileNameWithoutExtension(e.FullPath);
-            string psFileName = Path.GetFileNameWithoutExtension(tmpFileName) + ".ps";
+            string psFileName = e.FullPath;
             string dirName = Path.GetDirectoryName(e.FullPath);
-            try
-            {
-                File.Move(System.IO.Path.Combine(dirName, tmpFileName), System.IO.Path.Combine(dirName, psFileName));
-                File.Delete(e.FullPath);
-            }
-            catch (Exception ex)
-            {
-            }
 
             string gsshell = null;
             try
             {
-                gsshell = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValuePsShell, "aa");
+                gsshell = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValuePsShell, null);
             }
             catch (Exception ex)
             {
