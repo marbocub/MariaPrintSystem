@@ -104,12 +104,30 @@ namespace MariaPrintTray
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            bool newMutex;
 
-            Watcher watcher1 = new Watcher();
+            System.Threading.Mutex mutex = new System.Threading.Mutex(true, "MariaPrintTray", out newMutex);
 
-            Application.Run();
+            if (newMutex == false)
+            {
+                mutex.Close();
+                return;
+            }
+
+            try
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+
+                Watcher watcher1 = new Watcher();
+
+                Application.Run();
+            }
+            finally
+            {
+                mutex.ReleaseMutex();
+                mutex.Close();
+            }
         }
 
     }
