@@ -11,9 +11,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaPrintManager", "MariaPrintManager\MariaPrintManager.csproj", "{333760D8-6FEE-44FF-BD20-0CF4F86994FC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C0F3E457-2DC5-4DC1-840C-B21FB01A34A9} = {C0F3E457-2DC5-4DC1-840C-B21FB01A34A9}
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE} = {8054E1EB-C242-4A2E-864B-976AA7201FBE}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MariaPrintMon", "MariaPrintPort\MariaPrintPort.vcxproj", "{C0F3E457-2DC5-4DC1-840C-B21FB01A34A9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MariaPrintProcessor", "MariaPrintProcessor\MariaPrintProcessor.vcxproj", "{8054E1EB-C242-4A2E-864B-976AA7201FBE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +62,16 @@ Global
 		{C0F3E457-2DC5-4DC1-840C-B21FB01A34A9}.Release|x64.Build.0 = Release|x64
 		{C0F3E457-2DC5-4DC1-840C-B21FB01A34A9}.Release|x86.ActiveCfg = Release|Win32
 		{C0F3E457-2DC5-4DC1-840C-B21FB01A34A9}.Release|x86.Build.0 = Release|Win32
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Debug|x64.ActiveCfg = Debug|x64
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Debug|x64.Build.0 = Debug|x64
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Debug|x86.ActiveCfg = Debug|Win32
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Debug|x86.Build.0 = Debug|Win32
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Release|Any CPU.ActiveCfg = Release|Win32
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Release|x64.ActiveCfg = Release|x64
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Release|x64.Build.0 = Release|x64
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Release|x86.ActiveCfg = Release|Win32
+		{8054E1EB-C242-4A2E-864B-976AA7201FBE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,6 @@
 # MariaPrintSystem
 
-This is a print accounting and management system for Windows based on V3 printer model.
+This is a print accounting and management system for Windows based on V3 printer model. Under the developing.
 
 Subsystems
 ----------
@@ -10,6 +10,8 @@ Subsystems
 * MariaPrintTray is a tasktray icon / program that monitors new files in the virtual spool and kickstart the preview program with the name of the created file as an argument.
 
 * MariaPrintManager is a preview and print program for a PostScript file. It prints a PS file in the virtual spool to a real printer. It supports user interface for authenticate a user and accounting by page count.
+
+* MariaPrintProcessor is a print processor. It is planning to allow or deny print based on document name in print spool.
 
 Requirements and Limitations
 ============================
@@ -52,11 +54,21 @@ The preview program print postscript file to a printer saved in the registry val
 License
 =======
 
+## All subsystem except MariaPrintProcessor
+
 Copyright (c) 2018 @marbocub <marbocub@gmail.com>, All rights reserved.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation, see LICENSE.
+
+## Only MariaPrintProcessor subsystem
+
+Copyright (c) 1990-2003  Microsoft Corporation All Rights Reserved.
+
+Modified by @marbocub <marbocub@gmail.com>, All Rights Reserved.
+
+The MICROSOFT LIMITED PUBLIC LICENSE, see MariaPrintProcessor/license.rtf.
 
 The program Icon
 ================
