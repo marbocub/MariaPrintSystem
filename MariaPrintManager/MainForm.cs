@@ -19,6 +19,32 @@ namespace MariaPrintManager
         int pages = 0;
         int unitPrice = 10;
         bool testFIle = false;
+        int[,] A = new int[,] {
+	        {  841, 1189 },     // A0
+	        {  594,  841 },     // A1
+	        {  420,  594 },     // A2
+	        {  297,  420 },     // A3
+	        {  210,  297 },     // A4
+	        {  148,  210 },     // A5
+	        {  105,  148 },     // A6
+	        {   74,  105 },     // A7
+	        {   52,   74 },     // A8
+	        {   37,   52 },     // A9
+	        {   26,   37 }      // A10
+        };
+        int[,] B = new int[,] {
+	        { 1030, 1456 },     // B0
+	        {  728, 1030 },     // B1
+	        {  515,  728 },     // B2
+	        {  364,  515 },     // B3
+	        {  257,  364 },     // B4
+	        {  182,  257 },     // B5
+	        {  128,  182 },     // B6
+	        {   91,  128 },     // B7
+	        {   64,   91 },     // B8
+	        {   45,   64 },     // B9
+	        {   32,   45 }      // B10
+        };
 
         public MainForm()
         {
@@ -61,9 +87,12 @@ namespace MariaPrintManager
                         "-dSAFER",
                         "-sDEVICE=png16m",
                         "-sOutputFile=" + output,
+                        "-dUseMediaBox",
                         "-sPAPERSIZE=a4",
                         "-dTextAlphaBits=4",
-                        "-r72",
+                        "-dGraphicsAlphaBits=4",
+                        "-dDownScaleFactor=4",
+                        "-r150",
                         "-f",
                         psfile
                     };
@@ -73,7 +102,7 @@ namespace MariaPrintManager
                     if (pages > 0)
                     {
                         labelPageCount.Text = "計: " + pages.ToString() + " 枚";
-                        pictureBox1.ImageLocation = System.IO.Path.Combine(tmpdir, "def-0001.png");
+                        drawImageFromFile(System.IO.Path.Combine(tmpdir, "def-0001.png"));
                         textPoints.Text = (unitPrice * pages).ToString();
                         textPassword.Enabled = true;
                         textUserName.Enabled = true;
@@ -98,6 +127,37 @@ namespace MariaPrintManager
             this.textUserName.Focus();
             this.Activate();
             this.TopMost = false;
+        }
+
+        private void drawImageFromFile(string fileName)
+        {
+            try
+            {
+                System.IO.FileStream fs = new System.IO.FileStream(
+                    fileName,
+                    System.IO.FileMode.Open,
+                    System.IO.FileAccess.Read);
+                System.Drawing.Image img = System.Drawing.Image.FromStream(fs);
+                fs.Close();
+
+                // A4: width=210mm, height=297mm
+                Rectangle rect = new Rectangle(
+                    0, 0,
+                    (int)(A[4, 0] / 25.4 * ((Bitmap)img).HorizontalResolution),
+                    (int)(A[4, 1] / 25.4 * ((Bitmap)img).VerticalResolution));
+                Bitmap bmp = ((Bitmap)img).Clone(rect, img.PixelFormat);
+                img.Dispose();
+                if (pictureBox1.Image != null)
+                {
+                    pictureBox1.Image.Dispose();
+                    pictureBox1.Image = null;
+                }
+                pictureBox1.Image = bmp;
+            }
+            finally 
+            {
+                // do nothing
+            }
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
