@@ -92,6 +92,12 @@ namespace MariaPrintManager
                 }
                 statusStrip1.Refresh();
             }
+            this.Activate();
+            this.TopMost = true;
+            this.Activate();
+            this.textUserName.Focus();
+            this.Activate();
+            this.TopMost = false;
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
