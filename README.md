@@ -11,7 +11,7 @@ Subsystems
 
 * MariaPrintManager is a preview and print program for a PostScript file. It prints a PS file in the virtual spool to a real printer. It supports user interface for authenticate a user and accounting by page count.
 
-* MariaPrintProcessor is a print processor. It is planning to allow or deny print based on document name in print spool.
+* MariaPrintProcessor is a print processor to allow or deny print based on the document name of the print spool.
 
 Requirements and Limitations
 ============================

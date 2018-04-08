@@ -14,9 +14,15 @@ Abstract:
 
 #include <excpt.h>
 
+#include <stdio.h>
+
+#include <tchar.h>
+
 // registry key
-WCHAR szRegMariaPrintSystem[] = L"HKEY_LOCAL_MACHINE\\SOFTWARE\\Marbocub\\MariaPrintSystem";
-WCHAR szRegQueue[] = L"Queue";
+#define REG_KEY_VENDOR TEXT("Software\\Marbocub")
+#define REG_KEY_PRODUCT TEXT("Software\\Marbocub\\MariaPrintSystem")
+#define REG_VALUE_DOCUMENT_NAMES TEXT("AllowDocumentNames")
+#define MY_REG_OPTION REG_OPTION_VOLATILE
 
 LPWSTR  Datatypes[]={
     L"RAW",
@@ -535,29 +541,79 @@ Fail:
 --*/
 BOOL
 PrintDocumentOnPrintProcessor(
-    _In_ HANDLE  hPrintProcessor,
-    _In_ LPWSTR  pDocumentName
+	_In_ HANDLE  hPrintProcessor,
+	_In_ LPWSTR  pDocumentName
 )
 {
-    PPRINTPROCESSORDATA pData;
-
-    /**
-        Make sure the handle is valid and pick up
-        the Print Processors data area.
-    **/
-
-    if ((pData = ValidateHandle(hPrintProcessor)) == NULL) {
-
-        return FALSE;
-    }
+	PPRINTPROCESSORDATA pData;
 
 	/**
-		TODO: It is planning to allow or deny print based on document name in print spool.
+		Make sure the handle is valid and pick up
+		the Print Processors data area.
 	**/
 
+	if ((pData = ValidateHandle(hPrintProcessor)) == NULL) {
 
+		return FALSE;
+	}
 
-	
+	/**
+		To allow or deny print based on document name of spool.
+	**/
+	HKEY hKey;
+	DWORD dwDisposition;
+	DWORD dwSize;
+	BOOL match = false;
+
+	if (RegCreateKeyEx(HKEY_CURRENT_USER,
+		REG_KEY_VENDOR,
+		0,
+		NULL,
+		MY_REG_OPTION,
+		KEY_ALL_ACCESS,
+		NULL,
+		&hKey,
+		&dwDisposition) != ERROR_SUCCESS) {
+		return false;
+	}
+	RegCloseKey(hKey);
+
+	if (RegCreateKeyEx(HKEY_CURRENT_USER,
+		REG_KEY_PRODUCT,
+		0,
+		NULL,
+		MY_REG_OPTION,
+		KEY_ALL_ACCESS,
+		NULL,
+		&hKey,
+		&dwDisposition) != ERROR_SUCCESS) {
+		return false;
+	}
+	if (RegQueryValueEx(hKey, REG_VALUE_DOCUMENT_NAMES, 0, NULL, NULL, &dwSize) == ERROR_SUCCESS) {
+		HGLOBAL hMem = NULL;
+		if ((hMem = GlobalAlloc(GPTR, dwSize)) != NULL){
+			if (RegQueryValueEx(hKey, REG_VALUE_DOCUMENT_NAMES, 0, NULL, (BYTE*)hMem, &dwSize) == ERROR_SUCCESS) {
+				TCHAR* p = (TCHAR*)hMem;
+				DWORD l = 0;
+				while (*p)
+				{
+					if (_tcscmp(pData->pDocument, p) == 0) {
+						match = true;
+						break;
+					}
+					else {
+						p += _tcslen(p) + 1;
+					}
+				}
+			}
+			GlobalFree(hMem);
+		}
+	}
+	RegCloseKey(hKey);
+	if (!match) {
+		return false;
+	}
+
 	/**
         Print the job based on its data type.
     **/
