@@ -67,6 +67,27 @@ namespace MariaPrintManager
                 testFIle = true;
             }
             tmpdir = psfile + ".extract";
+
+            try
+            {
+                ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_Printer");
+                ManagementObjectCollection moc = mos.Get();
+                foreach (ManagementObject mo in moc)
+                {
+                    string printproc = mo["PrintProcessor"].ToString();
+                    if (printproc.Equals("mariaprint", StringComparison.OrdinalIgnoreCase))
+                    {
+                        comboPrinter.Items.Add(mo["Name"].ToString());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            if (comboPrinter.Items.Count > 0)
+            {
+                comboPrinter.SelectedIndex = 0;
+            }
         }
 
         private void MainForm_Shown(object sender, EventArgs e)
@@ -103,7 +124,6 @@ namespace MariaPrintManager
                     {
                         labelPageCount.Text = "計: " + pages.ToString() + " 枚";
                         drawImageFromFile(System.IO.Path.Combine(tmpdir, "def-0001.png"));
-                        textPoints.Text = (unitPrice * pages).ToString();
                         textPassword.Enabled = true;
                         textUserName.Enabled = true;
                         buttonPrint.Enabled = true;
@@ -193,11 +213,21 @@ namespace MariaPrintManager
             buttonPrint.Enabled = false;
 
             string printer = null;
+            if (comboPrinter.SelectedIndex >= 0)
+            {
+                printer = comboPrinter.SelectedItem.ToString();
+            }
+            else
+            {
+                MessageBox.Show("プリンタが選択されていません");
+                return;
+            }
             /*
             foreach (string s in System.Drawing.Printing.PrinterSettings.InstalledPrinters)
             {
             }
             */
+            /*
             try
             {
                 printer = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValuePrinter, null);
@@ -227,6 +257,7 @@ namespace MariaPrintManager
                     printer = null;
                 }
             }
+            */
 
             toolStripStatusLabel1.Text = "印刷中...";
             statusStrip1.Refresh();
