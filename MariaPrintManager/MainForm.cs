@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Management;
+using Microsoft.Win32;
 
 namespace MariaPrintManager
 {
@@ -83,6 +84,7 @@ namespace MariaPrintManager
             }
             catch (Exception ex)
             {
+                //
             }
             if (comboPrinter.Items.Count > 0)
             {
@@ -208,89 +210,102 @@ namespace MariaPrintManager
 
         private void buttonPrint_Click(object sender, EventArgs e)
         {
+            bool passwordEnabled = textPassword.Enabled;
+            bool usernameEnabled = textUserName.Enabled;
+            bool printerEnabled = comboPrinter.Enabled;
+            bool buttonEnabled = buttonPrint.Enabled;
+            string statusText = toolStripStatusLabel1.Text;
+
             textPassword.Enabled = false;
             textUserName.Enabled = false;
+            comboPrinter.Enabled = false;
             buttonPrint.Enabled = false;
 
-            string printer = null;
-            if (comboPrinter.SelectedIndex >= 0)
-            {
-                printer = comboPrinter.SelectedItem.ToString();
-            }
-            else
-            {
-                MessageBox.Show("プリンタが選択されていません");
-                return;
-            }
-            /*
-            foreach (string s in System.Drawing.Printing.PrinterSettings.InstalledPrinters)
-            {
-            }
-            */
-            /*
             try
             {
-                printer = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValuePrinter, null);
-            }
-            catch (Exception ex)
-            {
-                printer = null;
-            }
-            if (printer == null)
-            {
+                string printer = null;
+
+                if (comboPrinter.SelectedIndex >= 0)
+                {
+                    printer = comboPrinter.SelectedItem.ToString();
+                }
+                else
+                {
+                    throw new Exception("プリンタが選択されていません");
+                }
+                if (!AuthUser.Authenticate(textUserName.Text, textPassword.Text))
+                {
+                    toolStripStatusLabel1.Text = "認証エラー";
+                    statusStrip1.Refresh();
+                    throw new Exception("ユーザ名またはパスワードが違います");
+                }
+
+                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
+                {
+                    RegistryKey vendorKey = baseKey.CreateSubKey(@"SOFTWARE" + Properties.Resources.Vendor, true, RegistryOptions.Volatile);
+                    RegistryKey productKey = vendorKey.CreateSubKey(Properties.Resources.Product, true, RegistryOptions.Volatile);
+
+                    productKey.SetValue(Properties.Resources.RegValuePrinter, printer);
+                    string[] names = (string[])productKey.GetValue(Properties.Resources.RegValueDocumentNames, new string[] { });
+                    names = new string[names.Length + 1];
+                    names[names.Length - 1] = "Ghostscript output";
+                    productKey.SetValue(Properties.Resources.RegValueDocumentNames, names, RegistryValueKind.MultiString);
+
+                    productKey.Close();
+                    vendorKey.Close();
+                }
+
+                toolStripStatusLabel1.Text = "印刷中...";
+                statusStrip1.Refresh();
                 try
                 {
-                    ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_Printer");
-                    ManagementObjectCollection moc = mos.Get();
-                    foreach (ManagementObject mo in moc)
+                    string[] args = {
+                        "gs",
+                        "-dBATCH",
+                        "-dNOPAUSE",
+                        "-dSAFER",
+                        "-dNoCancel",
+                        "-sDEVICE=mswinpr2",
+                        "-sOutputFile=%printer%" + (printer == null ? "" : printer),
+                        "-sPAPERSIZE=a4",
+                        "-f",
+                        psfile
+                    };
+                    int result = GSDLL.Execute(args);
+
+                    if (!testFIle)
                     {
-                        string port = mo["PortName"].ToString();
-                        if (port.StartsWith("IP") || port.StartsWith("1"))
-                        {
-                            printer = mo["Name"].ToString();
-                            break;
-                        }
+                        System.IO.File.Delete(psfile);
                     }
+                    this.Close();
                 }
                 catch (Exception ex)
                 {
-                    printer = null;
+                    toolStripStatusLabel1.Text = "印刷時エラー";
+                    statusStrip1.Refresh();
+                    throw new Exception("印刷処理ができませんでした\r\n\r\n理由：" + ex.Message + "\r\n詳細：" + ex.HResult.ToString());
                 }
-            }
-            */
-
-            toolStripStatusLabel1.Text = "印刷中...";
-            statusStrip1.Refresh();
-            try
-            {
-                string[] args = {
-                    "gs",
-                    "-dBATCH",
-                    "-dNOPAUSE",
-                    "-dSAFER",
-                    "-dNoCancel",
-                    "-sDEVICE=mswinpr2",
-                    "-sOutputFile=%printer%" + (printer == null ? "" : printer),
-                    "-sPAPERSIZE=a4",
-                    "-f",
-                    psfile
-                };
-                int result = GSDLL.Execute(args);
-
-                if (!testFIle)
-                {
-                    System.IO.File.Delete(psfile);
-                }
-                this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("印刷処理ができませんでした\r\n\r\n理由：" + ex.Message + "\r\n詳細：" + ex.HResult.ToString(), Properties.Resources.Title);
-                toolStripStatusLabel1.Text = "印刷時エラー";
+                MessageBox.Show(ex.Message, Properties.Resources.Title, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
-            textPassword.Enabled = true;
-            textUserName.Enabled = true;
-            buttonPrint.Enabled = true;
+            finally
+            {
+                textPassword.Enabled = passwordEnabled;
+                textUserName.Enabled = usernameEnabled;
+                comboPrinter.Enabled = printerEnabled;
+                buttonPrint.Enabled = buttonEnabled;
+                toolStripStatusLabel1.Text = statusText;
+            }
+        }
+    }
+
+    class AuthUser
+    {
+        public static bool Authenticate(string usetname, string password)
+        {
+            return true;
         }
     }
 

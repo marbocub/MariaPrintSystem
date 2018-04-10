@@ -71,11 +71,29 @@ namespace MariaPrintManager.Properties {
         }
         
         /// <summary>
-        ///   HKEY_LOCAL_MACHINE\SOFTWARE\Marbocub\MariaPrintSystem に類似しているローカライズされた文字列を検索します。
+        ///   mariaprint に類似しているローカライズされた文字列を検索します。
         /// </summary>
-        internal static string RegKeyMariaPrintSystem {
+        internal static string PrintProcessor {
             get {
-                return ResourceManager.GetString("RegKeyMariaPrintSystem", resourceCulture);
+                return ResourceManager.GetString("PrintProcessor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   MariaPrintSystem に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string Product {
+            get {
+                return ResourceManager.GetString("Product", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   AllowDocumentNames に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string RegValueDocumentNames {
+            get {
+                return ResourceManager.GetString("RegValueDocumentNames", resourceCulture);
             }
         }
         
@@ -94,6 +112,15 @@ namespace MariaPrintManager.Properties {
         internal static string Title {
             get {
                 return ResourceManager.GetString("Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Marbocub に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string Vendor {
+            get {
+                return ResourceManager.GetString("Vendor", resourceCulture);
             }
         }
     }

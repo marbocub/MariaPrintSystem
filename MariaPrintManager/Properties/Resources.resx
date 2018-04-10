@@ -121,13 +121,22 @@
   <data name="Icon1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Icon1.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="RegKeyMariaPrintSystem" xml:space="preserve">
-    <value>HKEY_LOCAL_MACHINE\SOFTWARE\Marbocub\MariaPrintSystem</value>
+  <data name="PrintProcessor" xml:space="preserve">
+    <value>mariaprint</value>
+  </data>
+  <data name="Product" xml:space="preserve">
+    <value>MariaPrintSystem</value>
+  </data>
+  <data name="RegValueDocumentNames" xml:space="preserve">
+    <value>AllowDocumentNames</value>
   </data>
   <data name="RegValuePrinter" xml:space="preserve">
     <value>Printer</value>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Maria Print Manager</value>
+  </data>
+  <data name="Vendor" xml:space="preserve">
+    <value>Marbocub</value>
   </data>
 </root>
