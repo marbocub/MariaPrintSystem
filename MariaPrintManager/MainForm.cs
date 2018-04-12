@@ -216,6 +216,8 @@ namespace MariaPrintManager
             bool buttonEnabled = buttonPrint.Enabled;
             string statusText = toolStripStatusLabel1.Text;
 
+            string name = "Ghostscript output";
+
             textPassword.Enabled = false;
             textUserName.Enabled = false;
             comboPrinter.Enabled = false;
@@ -242,13 +244,27 @@ namespace MariaPrintManager
 
                 using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
                 {
-                    RegistryKey vendorKey = baseKey.CreateSubKey(@"SOFTWARE" + Properties.Resources.Vendor, true, RegistryOptions.Volatile);
+                    RegistryKey vendorKey = baseKey.CreateSubKey(@"SOFTWARE\" + Properties.Resources.Vendor, true, RegistryOptions.Volatile);
                     RegistryKey productKey = vendorKey.CreateSubKey(Properties.Resources.Product, true, RegistryOptions.Volatile);
 
                     productKey.SetValue(Properties.Resources.RegValuePrinter, printer);
                     string[] names = (string[])productKey.GetValue(Properties.Resources.RegValueDocumentNames, new string[] { });
-                    names = new string[names.Length + 1];
-                    names[names.Length - 1] = "Ghostscript output";
+
+                    bool hit = false;
+                    foreach (string s in names)
+                    {
+                        if (s ==  name)
+                        {
+                            hit = true;
+                            break;
+                        }
+                    }
+                    if (!hit)
+                    {
+                        Array.Resize(ref names, names.Length + 1);
+                        names[names.Length - 1] = name;
+                    }
+
                     productKey.SetValue(Properties.Resources.RegValueDocumentNames, names, RegistryValueKind.MultiString);
 
                     productKey.Close();
