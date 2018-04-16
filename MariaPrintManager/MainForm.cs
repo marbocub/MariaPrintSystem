@@ -71,15 +71,11 @@ namespace MariaPrintManager
 
             try
             {
-                ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_Printer");
+                ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_Printer where PrintProcessor = '" + "mariaprint" + "'");
                 ManagementObjectCollection moc = mos.Get();
                 foreach (ManagementObject mo in moc)
                 {
-                    string printproc = mo["PrintProcessor"].ToString();
-                    if (printproc.Equals("mariaprint", StringComparison.OrdinalIgnoreCase))
-                    {
-                        comboPrinter.Items.Add(mo["Name"].ToString());
-                    }
+                    comboPrinter.Items.Add(mo["Name"].ToString());
                 }
             }
             catch (Exception ex)
