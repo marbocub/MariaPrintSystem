@@ -88,7 +88,6 @@ namespace MariaPrintConfigurator
                 else
                 {
                     checkedListBoxPrinters.Items.Add(pq.Name);
-
                 }
             }
         }
