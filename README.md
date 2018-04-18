@@ -5,6 +5,8 @@ This is a print accounting and management system for Windows based on V3 printer
 Subsystems
 ----------
 
+* MariaPrintInf is a printer INF file and PPD file for postscript virtual printers. The paper size is A4 only.
+
 * MariaPrintMon is a port monitor that redirects the print data stream to a file with automatically generated name. When it use with a PostScript virtual printer, a PostScript file can be save in a directory. Here we call that directory the virtual spool.
 
 * MariaPrintTray is a tasktray icon / program that monitors new files in the virtual spool and kickstart the preview program with the name of the created file as an argument.
@@ -12,6 +14,10 @@ Subsystems
 * MariaPrintManager is a preview and print program for a PostScript file. It prints a PS file in the virtual spool to a real printer. It supports user interface for authenticate a user and accounting by page count.
 
 * MariaPrintProcessor is a print processor to allow or deny print based on the document name of the print spool.
+
+* MariaPrintaSetup is a installer.
+
+* MariaPrintConfigurator is a helper program for the installer. It configuring which print processor will used for a printer. 
 
 Requirements and Limitations
 ============================
