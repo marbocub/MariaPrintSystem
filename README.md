@@ -1,4 +1,4 @@
-# MariaPrintSystem
+# Maria Print System
 
 This is a print accounting and management system for Windows based on V3 printer model. Under the developing.
 
