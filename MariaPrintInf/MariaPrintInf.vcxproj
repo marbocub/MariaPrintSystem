@@ -68,25 +68,35 @@
     <NMakeReBuildCommandLine>nmake</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeCleanCommandLine>nmake clean</NMakeCleanCommandLine>
-    <OutDir>$(SolutionDir)</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeBuildCommandLine>makecat.bat</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>nmake</NMakeBuildCommandLine>
     <NMakeOutput>mariaprt.cat</NMakeOutput>
-    <NMakeReBuildCommandLine>makecat.bat</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>nmake</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <NMakeCleanCommandLine>nmake clean</NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <NMakeBuildCommandLine>makecat.bat</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>nmake</NMakeBuildCommandLine>
     <NMakeOutput>mariaprt.cat</NMakeOutput>
-    <NMakeReBuildCommandLine>makecat.bat</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>nmake</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeCleanCommandLine>nmake clean</NMakeCleanCommandLine>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeBuildCommandLine>makecat.bat</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>nmake</NMakeBuildCommandLine>
     <NMakeOutput>mariaprt.cat</NMakeOutput>
-    <NMakeReBuildCommandLine>makecat.bat</NMakeReBuildCommandLine>
+    <NMakeReBuildCommandLine>nmake</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <NMakeCleanCommandLine>nmake clean</NMakeCleanCommandLine>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
