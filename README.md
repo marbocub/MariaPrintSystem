@@ -1,11 +1,12 @@
-# Maria Print System
+Maria Print System
+==================
 
 This is a print accounting and management system for Windows based on V3 printer model. Under the developing.
 
 Subsystems
 ----------
 
-* MariaPrintInf is a printer INF file and PPD file for postscript virtual printers. The paper size is A4 only.
+* MariaPrintInf is a printer INF file and PPD file for postscript virtual printers. The paper size is now A4 only.
 
 * MariaPrintMon is a port monitor that redirects the print data stream to a file with automatically generated name. When it use with a PostScript virtual printer, a PostScript file can be save in a directory. Here we call that directory the virtual spool.
 
@@ -25,8 +26,15 @@ Requirements and Limitations
 This program is worked on Windows with .NET 3.0 and later. 
 We have developed on Windows 10 version 1709.
 
-How to use it
-=============
+Installer
+=========
+
+After the build all projects, you can find a installer named as MariaPrintSetup.msi under the directory MariaPrintSetup.
+
+Manual installation procedure
+=============================
+
+The manual installation procedures are below but we recommend using the installer.
 
 Port monitor
 ------------
@@ -60,7 +68,8 @@ The preview program print postscript file to a printer saved in the registry val
 License
 =======
 
-## All subsystem except MariaPrintProcessor
+All subsystem except MariaPrintProcessor
+----------------------------------------
 
 Copyright (c) 2018 @marbocub <marbocub@gmail.com>, All rights reserved.
 
@@ -68,7 +77,8 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation, see LICENSE.
 
-## Only MariaPrintProcessor subsystem
+Only MariaPrintProcessor subsystem
+----------------------------------
 
 Copyright (c) 1990-2003  Microsoft Corporation All Rights Reserved.
 
