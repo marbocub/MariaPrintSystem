@@ -17,7 +17,7 @@ DriverVer=01/01/2018,01.00.00.00
 [DriverName]
 
 [DriverName.NTamd64]
-"Maria Printer" = MARIAA4C.PPD,Maria_Pinter_A4_Color,Maria_Pinter_A4_Color
+"Maria Print System" = MARIAA4C.PPD,Maria_Pinter_A4_Color,Maria_Pinter_A4_Color
 
 [MARIAA4C.PPD]
 CopyFiles=@MARIAA4C.PPD
