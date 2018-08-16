@@ -17,7 +17,11 @@ namespace MariaPrintManager
     {
         string psfile = null;
         string tmpdir = null;
+        string inkfile = null;
         int pages = 0;
+        int mono_pages = 0;
+        int color_pages = 0;
+        int blank_pages = 0;
         int unitPrice = 10;
         bool testFIle = false;
         int[,] A = new int[,] {
@@ -68,6 +72,7 @@ namespace MariaPrintManager
                 testFIle = true;
             }
             tmpdir = psfile + ".extract";
+            inkfile = psfile + ".ink";
 
             try
             {
@@ -88,44 +93,150 @@ namespace MariaPrintManager
             }
         }
 
-        private void MainForm_Shown(object sender, EventArgs e)
+        private async void MainForm_Shown(object sender, EventArgs e)
         {
+            this.Activate();
+            this.TopMost = true;
+            this.Activate();
+            this.TopMost = false;
+
             if (psfile != null && System.IO.File.Exists(psfile))
             {
                 this.Refresh();
                 toolStripStatusLabel1.Text = "ファイル解析中";
                 statusStrip1.Refresh();
+
+                labelAnalysis.Text = "印刷データを読み込んでいます…";
+                labelAnalysis.Visible = true;
+                labelAnalysis.Refresh();
+                timer1.Interval = 3000;
+                timer1.Enabled = true;
+                this.Refresh();
                 try
                 {
+                    // サムネイル作成
                     System.IO.Directory.CreateDirectory(tmpdir);
                     string output = System.IO.Path.Combine(tmpdir, "def-%04d.png");
-                    string[] args = {
-                        "gs",
-                        "-dBATCH",
-                        "-dNOPAUSE",
-                        "-dSAFER",
-                        "-sDEVICE=png16m",
-                        "-sOutputFile=" + output,
-                        "-dUseMediaBox",
-                        "-sPAPERSIZE=a4",
-                        "-dTextAlphaBits=4",
-                        "-dGraphicsAlphaBits=4",
-                        "-dDownScaleFactor=4",
-                        "-r150",
-                        "-f",
-                        psfile
-                    };
-                    int result = GSDLL.Execute(args);
 
-                    pages = System.IO.Directory.GetFiles(tmpdir, "*", System.IO.SearchOption.TopDirectoryOnly).Length;
+                    await Task.Run(() =>
+                    {
+                        string[] args = {
+                            "gs",
+                            "-dBATCH",
+                            "-dSAFER",
+                            "-sDEVICE=png16m",
+                            "-sOutputFile=" + output,
+                            "-dUseMediaBox",
+                            "-sPAPERSIZE=a4",
+                            "-dTextAlphaBits=4",
+                            "-dGraphicsAlphaBits=4",
+                            "-r96",
+                            "-dFirstPage=1",
+                            "-dLastPage=1",
+                            "-f",
+                            psfile
+                        };
+                        /*
+                            "-dNOPAUSE",
+                            "-dTextAlphaBits=4",
+                            "-dGraphicsAlphaBits=4",
+                            "-dDownScaleFactor=4",
+                         */
+                        int result = GSDLL.Execute(args);
+                    });
+                }
+                catch (Exception ex)
+                {
+                }
+                try
+                {
+                    if (System.IO.Directory.GetFiles(tmpdir, "*", System.IO.SearchOption.TopDirectoryOnly).Length > 0)
+                    {
+                        drawImageFromFile(System.IO.Path.Combine(tmpdir, "def-0001.png"));
+                    }
+                    System.IO.Directory.Delete(tmpdir, true);
+                }
+                catch (Exception ex)
+                {
+                }
+                timer1.Stop();
+                timer1.Enabled = false;
+
+                try
+                {
+                    labelAnalysis.Text = "ページ数をカウントしています…";
+                    labelAnalysis.Visible = true;
+                    labelAnalysis.Refresh();
+                    timer1.Interval = 3000;
+                    timer1.Enabled = true;
+                    this.Refresh();
+
+                    await Task.Run(() =>
+                    {
+                        // インク消費量からカラー/モノクロのページ数を算出
+                        string[] args = {
+                            "gs",
+                            "-dBATCH",
+                            "-dNOPAUSE",
+                            "-dSAFER",
+                            "-dNoCancel",
+                            "-sDEVICE=inkcov",
+                            "-sOutputFile=" + inkfile,
+                            "-sPAPERSIZE=a4",
+                            "-r75",
+                            "-f",
+                            psfile
+                        };
+                        int result = GSDLL.Execute(args);
+
+                        Microsoft.VisualBasic.FileIO.TextFieldParser tfp = new Microsoft.VisualBasic.FileIO.TextFieldParser(inkfile);
+                        tfp.Delimiters = new string[] { " " };
+                        while (!tfp.EndOfData)
+                        {
+                            string[] fields = tfp.ReadFields();
+                            double[] ink = { 0.0, 0.0, 0.0, 0.0 };
+                            int i = 0;
+                            foreach (string s in fields)
+                            {
+                                if (s.Length > 0)
+                                {
+                                    ink[i] = Convert.ToDouble(s);
+                                    i++;
+                                }
+                                if (i > 3)
+                                {
+                                    break;
+                                }
+                            }
+                            if (ink[0] + ink[1] + ink[2] > 0.0)
+                            {
+                                color_pages++;
+                            }
+                            else if (ink[3] > 0.0)
+                            {
+                                mono_pages++;
+                            }
+                            else
+                            {
+                                blank_pages++;
+                            }
+                            pages++;
+                        }
+                        tfp.Close();
+                        System.IO.File.Delete(inkfile);
+                    });
+
                     if (pages > 0)
                     {
-                        labelPageCount.Text = "計: " + pages.ToString() + " 枚";
-                        drawImageFromFile(System.IO.Path.Combine(tmpdir, "def-0001.png"));
+                        labelPageCount.Text = "計 " + pages.ToString() + " 枚";
+                        toolStripStatusLabel1.Text =
+                            "カラー: " + color_pages.ToString() + " 枚　" +
+                            "白黒: " + mono_pages.ToString() + " 枚　" +
+                            "ブランク: " + blank_pages.ToString() + " 枚　" +
+                            "計: " + pages.ToString() + " 枚";
                         textPassword.Enabled = true;
                         textUserName.Enabled = true;
                         buttonPrint.Enabled = true;
-                        toolStripStatusLabel1.Text = "計 " + pages.ToString() + " 枚 / " + (unitPrice * pages).ToString() + " ポイント";
                     }
                     else
                     {
@@ -134,10 +245,13 @@ namespace MariaPrintManager
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("印刷処理ができませんでした\r\n\r\n理由：" + ex.Message + "\r\n詳細：" + ex.HResult.ToString(), Properties.Resources.Title);
+                    MessageBox.Show("印刷データの読み込みができませんでした\r\n\r\n理由：" + ex.Message + "\r\n詳細：" + ex.HResult.ToString(), Properties.Resources.Title);
                     toolStripStatusLabel1.Text = "解析エラー";
                 }
                 statusStrip1.Refresh();
+                labelAnalysis.Visible = false;
+                labelAnalysis.Refresh();
+                this.Refresh();
             }
             this.Activate();
             this.TopMost = true;
@@ -197,6 +311,16 @@ namespace MariaPrintManager
                 if (!testFIle)
                 {
                     System.IO.File.Delete(psfile);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+            try
+            {
+                if (!testFIle)
+                {
+                    System.IO.File.Delete(inkfile);
                 }
             }
             catch (Exception ex)
@@ -310,6 +434,12 @@ namespace MariaPrintManager
                 buttonPrint.Enabled = buttonEnabled;
                 toolStripStatusLabel1.Text = statusText;
             }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            labelAnalysis.Text += "しばらくお待ちください";
+            timer1.Enabled = false;
         }
     }
 

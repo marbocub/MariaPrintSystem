@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,6 +44,8 @@
             this.textUserName = new System.Windows.Forms.TextBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.labelPageCount = new System.Windows.Forms.Label();
+            this.labelAnalysis = new System.Windows.Forms.Label();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -202,11 +205,29 @@
             this.labelPageCount.Text = "(0 / 0)";
             this.labelPageCount.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // labelAnalysis
+            // 
+            this.labelAnalysis.AutoSize = true;
+            this.labelAnalysis.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.labelAnalysis.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.labelAnalysis.Location = new System.Drawing.Point(12, 36);
+            this.labelAnalysis.Name = "labelAnalysis";
+            this.labelAnalysis.Padding = new System.Windows.Forms.Padding(10);
+            this.labelAnalysis.Size = new System.Drawing.Size(75, 34);
+            this.labelAnalysis.TabIndex = 5;
+            this.labelAnalysis.Text = "起動中…";
+            this.labelAnalysis.Visible = false;
+            // 
+            // timer1
+            // 
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(464, 441);
+            this.Controls.Add(this.labelAnalysis);
             this.Controls.Add(this.labelPageCount);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.panel1);
@@ -247,5 +268,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ComboBox comboPrinter;
+        private System.Windows.Forms.Label labelAnalysis;
+        private System.Windows.Forms.Timer timer1;
     }
 }
