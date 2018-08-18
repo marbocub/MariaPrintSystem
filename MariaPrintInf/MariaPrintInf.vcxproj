@@ -68,17 +68,19 @@
     <NMakeReBuildCommandLine>nmake</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeCleanCommandLine>nmake clean</NMakeCleanCommandLine>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+    <ExecutablePath>$(WindowsSdkDir_10)\bin\x86\;$(WindowsSdkDir_10)\App Certification Kit\;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <NMakeBuildCommandLine>nmake</NMakeBuildCommandLine>
     <NMakeOutput>mariaprt.cat</NMakeOutput>
     <NMakeReBuildCommandLine>nmake</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <NMakeCleanCommandLine>nmake clean</NMakeCleanCommandLine>
+    <ExecutablePath>$(WindowsSdkDir_10)\bin\x86\;$(WindowsSdkDir_10)\App Certification Kit\;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <NMakeBuildCommandLine>nmake</NMakeBuildCommandLine>
@@ -86,17 +88,19 @@
     <NMakeReBuildCommandLine>nmake</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeCleanCommandLine>nmake clean</NMakeCleanCommandLine>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+    <ExecutablePath>$(WindowsSdkDir_10)\bin\x86\;$(WindowsSdkDir_10)\App Certification Kit\;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeBuildCommandLine>nmake</NMakeBuildCommandLine>
     <NMakeOutput>mariaprt.cat</NMakeOutput>
     <NMakeReBuildCommandLine>nmake</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(ProjectName)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <NMakeCleanCommandLine>nmake clean</NMakeCleanCommandLine>
+    <ExecutablePath>$(WindowsSdkDir_10)\bin\x86\;$(WindowsSdkDir_10)\App Certification Kit\;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
