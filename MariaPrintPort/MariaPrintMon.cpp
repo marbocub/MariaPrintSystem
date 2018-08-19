@@ -261,6 +261,87 @@ BOOL WINAPI MariaStartDocPort(
 		return FALSE;
 	}
 
+
+	JOB_INFO_2 *info2 = NULL;
+	DWORD needed = 0, used = 0;
+	BOOL success = false;
+	EnterCritical();
+	GetJob(pPortIni->hPrinter, JobId, 2, NULL, 0, (LPDWORD)&needed);
+	if (needed >= 0 && (info2 = (JOB_INFO_2*)GlobalAlloc(GPTR, needed)) != NULL) {
+		ZeroMemory(info2, needed);
+		success = GetJob(pPortIni->hPrinter, JobId, 2, (LPBYTE)info2, needed, (LPDWORD)&used);
+		if (success == 0) {
+			GlobalFree(info2);
+			info2 = NULL;
+		}
+	}
+	LeaveCritical();
+
+	if (info2 != NULL) {
+		WCHAR filePath2[MAX_PATH + 1] = { 0 };
+		wcscpy_s(filePath2, _countof(filePath2), filePath);
+		wcscat_s(filePath2, _countof(filePath2), L".ini");
+		WCHAR str[1024+2] = { 0 };
+		DEVMODE *devmode = info2->pDevMode;
+
+		/* JOB_INFO_2 */
+		wsprintf(str, L"%ld", info2->JobId); WritePrivateProfileStringW(L"JOBINFO", L"JobId", str, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"PrinterName", info2->pPrinterName, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"MachineName", info2->pMachineName, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"UserName", info2->pUserName, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"Document", info2->pDocument, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"NotifyName", info2->pNotifyName, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"Datatype", info2->pDatatype, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"PrintProcessor", info2->pPrintProcessor, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"Parameters", info2->pParameters, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"DriverName", info2->pDriverName, filePath2);
+		WritePrivateProfileStringW(L"JOBINFO", L"Status", info2->pStatus, filePath2);
+
+		wsprintf(str, L"%ld", info2->Status); WritePrivateProfileStringW(L"JOBINFO", L"StatusD", str, filePath2);
+		wsprintf(str, L"%ld", info2->Priority); WritePrivateProfileStringW(L"JOBINFO", L"Priority", str, filePath2);
+		wsprintf(str, L"%ld", info2->Position); WritePrivateProfileStringW(L"JOBINFO", L"Position", str, filePath2);
+		wsprintf(str, L"%ld", info2->StartTime); WritePrivateProfileStringW(L"JOBINFO", L"StartTime", str, filePath2);
+		wsprintf(str, L"%ld", info2->UntilTime); WritePrivateProfileStringW(L"JOBINFO", L"UntilTime", str, filePath2);
+		wsprintf(str, L"%ld", info2->TotalPages); WritePrivateProfileStringW(L"JOBINFO", L"TotalPages", str, filePath2);
+		wsprintf(str, L"%ld", info2->Size); WritePrivateProfileStringW(L"JOBINFO", L"Size", str, filePath2);
+		wsprintf(str, L"%ld", info2->Time); WritePrivateProfileStringW(L"JOBINFO", L"Time", str, filePath2);
+		wsprintf(str, L"%ld", info2->PagesPrinted); WritePrivateProfileStringW(L"JOBINFO", L"PagesPrinted", str, filePath2);
+
+		/* flush buffer */
+		WritePrivateProfileStringW(NULL, NULL, NULL, filePath2);
+
+		/* DEVMODE */
+		wsprintf(str, L"%d", devmode->dmSpecVersion); WritePrivateProfileStringW(L"DEVMODE", L"SpecVersion", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmDriverVersion); WritePrivateProfileStringW(L"DEVMODE", L"DriverVersion", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmSize); WritePrivateProfileStringW(L"DEVMODE", L"Size", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmDriverExtra); WritePrivateProfileStringW(L"DEVMODE", L"DriverExtra", str, filePath2);
+		wsprintf(str, L"%ld", devmode->dmFields); WritePrivateProfileStringW(L"DEVMODE", L"Fields", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmOrientation); WritePrivateProfileStringW(L"DEVMODE", L"Orientation", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmPaperSize); WritePrivateProfileStringW(L"DEVMODE", L"PaperSize", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmPaperLength); WritePrivateProfileStringW(L"DEVMODE", L"PaperLength", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmPaperWidth); WritePrivateProfileStringW(L"DEVMODE", L"PaperWidth", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmScale); WritePrivateProfileStringW(L"DEVMODE", L"Scale", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmCopies); WritePrivateProfileStringW(L"DEVMODE", L"Copies", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmDefaultSource); WritePrivateProfileStringW(L"DEVMODE", L"DefaultSource", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmPrintQuality); WritePrivateProfileStringW(L"DEVMODE", L"PrintQuality", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmColor); WritePrivateProfileStringW(L"DEVMODE", L"Color", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmDuplex); WritePrivateProfileStringW(L"DEVMODE", L"Duplex", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmYResolution); WritePrivateProfileStringW(L"DEVMODE", L"YResolution", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmTTOption); WritePrivateProfileStringW(L"DEVMODE", L"TTOption", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmCollate); WritePrivateProfileStringW(L"DEVMODE", L"Collate", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmLogPixels); WritePrivateProfileStringW(L"DEVMODE", L"LogPixels", str, filePath2);
+		wsprintf(str, L"%u", devmode->dmBitsPerPel); WritePrivateProfileStringW(L"DEVMODE", L"BitsPerPel", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmPelsWidth); WritePrivateProfileStringW(L"DEVMODE", L"PelsWidth", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmPelsHeight); WritePrivateProfileStringW(L"DEVMODE", L"PelsHeight", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmDisplayFlags); WritePrivateProfileStringW(L"DEVMODE", L"DisplayFlags", str, filePath2);
+		wsprintf(str, L"%d", devmode->dmDisplayFrequency); WritePrivateProfileStringW(L"DEVMODE", L"DisplayFrequency", str, filePath2);
+
+		/* flush buffer */
+		WritePrivateProfileStringW(NULL, NULL, NULL, filePath2);
+
+		GlobalFree(info2);
+	}
+
 	return TRUE;
 }
 
