@@ -22,6 +22,18 @@ namespace MariaPrintConfigurator
 
         private void button1_Click(object sender, EventArgs e)
         {
+            this.UseWaitCursor = true;
+            buttonSave.Enabled = false;
+            checkedListBoxPrinters.Enabled = false;
+            listBoxPrinters.Enabled = false;
+            labelWait.Left = splitContainer1.Left + (splitContainer1.Width - labelWait.Width) / 2;
+            labelWait.Top = splitContainer1.Top + (splitContainer1.Panel1.Height - labelWait.Height) / 2;
+            labelWait.Visible = true;
+            checkedListBoxPrinters.Refresh();
+            listBoxPrinters.Refresh();
+            labelWait.Refresh();
+            this.Refresh();
+
             PrintServer ps = new PrintServer();
             foreach (object o in checkedListBoxPrinters.Items)
             {
@@ -48,6 +60,7 @@ namespace MariaPrintConfigurator
                 mos.Dispose();
             }
 
+            this.UseWaitCursor = false;
             this.Close();
         }
 

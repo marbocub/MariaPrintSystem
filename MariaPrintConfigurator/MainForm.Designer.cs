@@ -34,6 +34,7 @@
             this.checkedListBoxPrinters = new System.Windows.Forms.CheckedListBox();
             this.listBoxPrinters = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.labelWait = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -78,9 +79,9 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(0, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(146, 12);
+            this.label1.Size = new System.Drawing.Size(170, 12);
             this.label1.TabIndex = 4;
-            this.label1.Text = "対象プリンタを選択してください";
+            this.label1.Text = "課金対象プリンタを選択してください";
             // 
             // checkedListBoxPrinters
             // 
@@ -114,14 +115,28 @@
             this.label2.TabIndex = 5;
             this.label2.Text = "次のプリンタは選択できません";
             // 
+            // labelWait
+            // 
+            this.labelWait.AutoSize = true;
+            this.labelWait.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.labelWait.Location = new System.Drawing.Point(12, 286);
+            this.labelWait.Name = "labelWait";
+            this.labelWait.Padding = new System.Windows.Forms.Padding(10);
+            this.labelWait.Size = new System.Drawing.Size(110, 34);
+            this.labelWait.TabIndex = 6;
+            this.labelWait.Text = "設定しています…";
+            this.labelWait.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(304, 321);
+            this.Controls.Add(this.labelWait);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.buttonSave);
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MariaPrintConfigurator";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Shown += new System.EventHandler(this.Form1_Shown);
@@ -132,6 +147,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -143,6 +159,7 @@
         private System.Windows.Forms.CheckedListBox checkedListBoxPrinters;
         private System.Windows.Forms.ListBox listBoxPrinters;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelWait;
     }
 }
 
