@@ -17,10 +17,17 @@ DriverVer=01/01/2018,01.00.00.00
 [DriverName]
 
 [DriverName.NTamd64]
-"Maria Print System" = MARIAA4C.PPD,Maria_Pinter_A4_Color,Maria_Pinter_A4_Color
+"Maria Print System (A4)" = MARIAA4C.PPD,Maria_Pinter_A4_Color,Maria_Pinter_A4_Color
+"Maria Print System (A4/A3/B5/B4)" = MARIAABC.PPD,Maria_Pinter_AB_Color,Maria_Pinter_AB_Color
 
 [MARIAA4C.PPD]
 CopyFiles=@MARIAA4C.PPD
+DataSection=PSCRIPT_DATA
+Include=NTPRINT.INF
+Needs=PSCRIPT.OEM
+
+[MARIAABC.PPD]
+CopyFiles=@MARIAABC.PPD
 DataSection=PSCRIPT_DATA
 Include=NTPRINT.INF
 Needs=PSCRIPT.OEM
@@ -30,6 +37,7 @@ Needs=PSCRIPT.OEM
 
 [SourceDisksFiles]
 MARIAA4C.PPD =1
+MARIAABC.PPD =1
 
 [DestinationDirs]
 DefaultDestDir=66000

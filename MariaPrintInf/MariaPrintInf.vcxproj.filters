@@ -22,5 +22,8 @@
       <Filter>ソース ファイル</Filter>
     </None>
     <None Include="MAKEFILE" />
+    <None Include="mariaabc.ppd">
+      <Filter>ソース ファイル</Filter>
+    </None>
   </ItemGroup>
 </Project>

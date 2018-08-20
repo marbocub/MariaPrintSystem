@@ -21,13 +21,19 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_308B14518E9842389ADBD5E330ADE19F"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_38F59F9C416149AF867D4ADEA823CDAF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_40417CA0802E4123982BC2A351B4899F"
+        "MsmKey" = "8:_4798E4829A344DBEA7D1624BF2B2E7D9"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -58,13 +64,13 @@
         "Entry"
         {
         "MsmKey" = "8:_C5E3F8A6F983C9B20FCD4D0A0F27F206"
-        "OwnerKey" = "8:_40417CA0802E4123982BC2A351B4899F"
+        "OwnerKey" = "8:_716DAF027F92481D8492ADF3FD356AA0"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_C5E3F8A6F983C9B20FCD4D0A0F27F206"
-        "OwnerKey" = "8:_716DAF027F92481D8492ADF3FD356AA0"
+        "OwnerKey" = "8:_FBF9D5510577411CB2B00A70A6AE486C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -99,6 +105,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_FBF9D5510577411CB2B00A70A6AE486C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_7B92D9292C764F5B8C7C9A141BEE9473"
         "MsmSig" = "8:_UNDEFINED"
@@ -106,13 +118,13 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_716DAF027F92481D8492ADF3FD356AA0"
+        "OwnerKey" = "8:_FBF9D5510577411CB2B00A70A6AE486C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_40417CA0802E4123982BC2A351B4899F"
+        "OwnerKey" = "8:_716DAF027F92481D8492ADF3FD356AA0"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -221,17 +233,17 @@
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_500A400DF4EF47FE98C5D1BE57E77F94"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_320E47766CF3438682394F3EB07D8A9C"
             {
             "Name" = "8:プライマリ出力 from MariaPrintConfigurator (Active)"
             "Condition" = "8:"
-            "Object" = "8:_40417CA0802E4123982BC2A351B4899F"
+            "Object" = "8:_FBF9D5510577411CB2B00A70A6AE486C"
             "FileType" = "3:2"
             "InstallAction" = "3:2"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:2"
-            "Identifier" = "8:_4476685E_513F_4FCD_BC54_A90F9AA7506A"
+            "Identifier" = "8:_7E23C96A_71AE_4212_A2FE_8B6500FFDA45"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
@@ -263,6 +275,20 @@
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_89BE1FA98D6A4D6E9FBED79BEDA62C9D"
+            {
+            "Name" = "8:start_tray.vbs"
+            "Condition" = "8:"
+            "Object" = "8:_4798E4829A344DBEA7D1624BF2B2E7D9"
+            "FileType" = "3:4"
+            "InstallAction" = "3:2"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:3"
+            "Identifier" = "8:_03C3D304_1313_46D7_9C10_43A89DDFE195"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:[TARGETDIR]"
+            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_930A8A048D394A1E975436FB4D2DDAAD"
             {
             "Name" = "8:restart_service.vbs"
@@ -274,20 +300,6 @@
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
             "Identifier" = "8:_27CF7D27_FB17_4F3C_B09B_6F8A50C86818"
-            "InstallerClass" = "11:FALSE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_FD1F7AAD352C4786ABFDE2BE706E2508"
-            {
-            "Name" = "8:add_virtual_printer.vbs"
-            "Condition" = "8:"
-            "Object" = "8:_38F59F9C416149AF867D4ADEA823CDAF"
-            "FileType" = "3:4"
-            "InstallAction" = "3:2"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:3"
-            "Identifier" = "8:_39D137C7_7F02_4B6E_AD38_0CB99B7B299F"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
@@ -330,6 +342,26 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_308B14518E9842389ADBD5E330ADE19F"
+            {
+            "SourcePath" = "8:..\\MariaPrintInf\\mariaabc.ppd"
+            "TargetName" = "8:mariaabc.ppd"
+            "Tag" = "8:"
+            "Folder" = "8:_3DB6021EAB1949EE82DD411F0E8F5C31"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
@@ -350,7 +382,27 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4798E4829A344DBEA7D1624BF2B2E7D9"
+            {
+            "SourcePath" = "8:..\\start_tray.vbs"
+            "TargetName" = "8:start_tray.vbs"
+            "Tag" = "8:"
+            "Folder" = "8:_D98628FE367A40A9815C9BDA1848FB54"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
@@ -370,7 +422,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
@@ -441,7 +493,7 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:FALSE"
+            "Exclude" = "11:TRUE"
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
@@ -567,7 +619,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:MariaPrintSystem"
         "ProductCode" = "8:{7763BAD4-FF7B-4FE6-B0B6-762C642545BB}"
-        "PackageCode" = "8:{3FA0943D-4806-48C4-AFF7-A9354760B7AA}"
+        "PackageCode" = "8:{9DCD67C3-0200-4459-B2CF-866FAAAD9296}"
         "UpgradeCode" = "8:{4A73110E-A4B9-41C5-B0B2-1D884591BDE0}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -1622,34 +1674,6 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_40417CA0802E4123982BC2A351B4899F"
-            {
-            "SourcePath" = "8:..\\MariaPrintConfigurator\\obj\\Release\\MariaPrintConfigurator.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D98628FE367A40A9815C9BDA1848FB54"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:Built"
-            "OutputProjectGuid" = "8:{6F7B609C-E3BC-4C03-8445-0BCFB1C9F0FE}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_716DAF027F92481D8492ADF3FD356AA0"
             {
             "SourcePath" = "8:..\\MariaPrintManager\\obj\\Release\\MariaPrintManager.exe"
@@ -1813,6 +1837,34 @@
             "OutputConfiguration" = "8:"
             "OutputGroupCanonicalName" = "8:ContentFiles"
             "OutputProjectGuid" = "8:{333760D8-6FEE-44FF-BD20-0CF4F86994FC}"
+            "ShowKeyOutput" = "11:TRUE"
+                "ExcludeFilters"
+                {
+                }
+            }
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_FBF9D5510577411CB2B00A70A6AE486C"
+            {
+            "SourcePath" = "8:..\\MariaPrintConfigurator\\obj\\Release\\MariaPrintConfigurator.exe"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_D98628FE367A40A9815C9BDA1848FB54"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:TRUE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            "ProjectOutputGroupRegister" = "3:1"
+            "OutputConfiguration" = "8:"
+            "OutputGroupCanonicalName" = "8:Built"
+            "OutputProjectGuid" = "8:{6F7B609C-E3BC-4C03-8445-0BCFB1C9F0FE}"
             "ShowKeyOutput" = "11:TRUE"
                 "ExcludeFilters"
                 {

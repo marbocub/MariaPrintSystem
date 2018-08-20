@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		add_virtual_printer.vbs = add_virtual_printer.vbs
 		restart_service.vbs = restart_service.vbs
 		restore_printprocessor.vbs = restore_printprocessor.vbs
+		start_tray.vbs = start_tray.vbs
 		stop_service.vbs = stop_service.vbs
 	EndProjectSection
 EndProject
