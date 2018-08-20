@@ -47,7 +47,7 @@ namespace MariaPrintManager.Properties {
         }
         
         /// <summary>
-        ///   厳密に型指定されたこのリソース クラスを使用して、すべての検索リソースに対し、
+        ///   すべてについて、現在のスレッドの CurrentUICulture プロパティをオーバーライドします
         ///   現在のスレッドの CurrentUICulture プロパティをオーバーライドします。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
@@ -85,6 +85,24 @@ namespace MariaPrintManager.Properties {
         internal static string Product {
             get {
                 return ResourceManager.GetString("Product", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   HKEY_LOCAL_MACHINE\SOFTWARE\Marbocub\MariaPrintSystem に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string RegKeyMariaPrintSystem {
+            get {
+                return ResourceManager.GetString("RegKeyMariaPrintSystem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   BaseUrl に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string RegValueBaseUrl {
+            get {
+                return ResourceManager.GetString("RegValueBaseUrl", resourceCulture);
             }
         }
         

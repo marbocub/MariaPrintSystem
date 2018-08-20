@@ -400,7 +400,7 @@
             this.labelPageCount.AutoSize = true;
             this.labelPageCount.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.labelPageCount.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.labelPageCount.Location = new System.Drawing.Point(515, 406);
+            this.labelPageCount.Location = new System.Drawing.Point(515, 400);
             this.labelPageCount.Name = "labelPageCount";
             this.labelPageCount.Padding = new System.Windows.Forms.Padding(5);
             this.labelPageCount.Size = new System.Drawing.Size(57, 22);

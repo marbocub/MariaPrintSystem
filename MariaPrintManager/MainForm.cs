@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Management;
+using System.Runtime.Serialization;
 using Microsoft.Win32;
+using System.Net.Http;
 
 namespace MariaPrintManager
 {
@@ -220,7 +222,7 @@ namespace MariaPrintManager
                     {
                         drawImageFromFile(System.IO.Path.Combine(tmpdir, "def-0001.png"));
                     }
-                    //System.IO.Directory.Delete(tmpdir, true);
+                    System.IO.Directory.Delete(tmpdir, true);
                 }
                 catch
                 {
@@ -303,19 +305,8 @@ namespace MariaPrintManager
                     });
                     labelAnalysis.Text = "計 " + pages + " 枚";
                     labelAnalysis.Refresh();
-                    if (pages > 0)
-                    {
-                        labelPageCount.Text = "計 " + pages.ToString() + " 枚";
-                        toolStripStatusLabel1.Text =
-                            "カラー: " + color_pages.ToString() + " 枚　" +
-                            "白黒: " + mono_pages.ToString() + " 枚　" +
-                            "ブランク: " + blank_pages.ToString() + " 枚　" +
-                            "計: " + pages.ToString() + " 枚";
-                    }
-                    else
-                    {
-                        toolStripStatusLabel1.Text = "";
-                    }
+
+                    DisplayPageAndCost();
                 }
                 catch (Exception ex)
                 {
@@ -381,6 +372,37 @@ namespace MariaPrintManager
             finally 
             {
                 // do nothing
+            }
+        }
+
+        private async void DisplayPageAndCost()
+        {
+            if (pages > 0)
+            {
+                labelPageCount.Text = "計 " + pages.ToString() + " 枚";
+                toolStripStatusLabel1.Text =
+                    "カラー: " + color_pages.ToString() + " 枚　" +
+                    "白黒: " + mono_pages.ToString() + " 枚　" +
+                    "ブランク: " + blank_pages.ToString() + " 枚　" +
+                    "計: " + pages.ToString() + " 枚";
+
+                int cost = -1;
+                try
+                {
+                    cost = await WebAPI.Quotation(color_pages, mono_pages, blank_pages, comboPaper.SelectedIndex, "", comboPrinter.SelectedItem.ToString());
+                }
+                catch
+                {
+                    // do nothing
+                }
+                if (cost >= 0)
+                {
+                    toolStripStatusLabel1.Text += "　" + cost.ToString() + " Points";
+                }
+            }
+            else
+            {
+                toolStripStatusLabel1.Text = "";
             }
         }
 
@@ -486,7 +508,7 @@ namespace MariaPrintManager
             }
         }
 
-        private void buttonPrint_Click(object sender, EventArgs e)
+        private async void buttonPrint_Click(object sender, EventArgs e)
         {
             EnableControls(false);
             string statusText = toolStripStatusLabel1.Text;
@@ -534,10 +556,18 @@ namespace MariaPrintManager
                         "用紙サイズ: " + comboPaper.SelectedItem.ToString());
                 }
 
-                if (!AuthUser.Authenticate(textUserName.Text, textPassword.Text))
+                WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, color_pages, mono_pages, blank_pages, comboPaper.SelectedIndex, "", comboPrinter.SelectedItem.ToString());
+                if (info == null) 
                 {
-                    throw new Exception("ユーザ名またはパスワードが違います");
+                    throw new Exception("ネットワークエラーです。接続を確認してください。");
                 }
+                if (info.result != "OK")
+                {
+                    throw new Exception(info.message);
+                }
+                labelAnalysis.Text = info.message.Replace("\\n", "\r\n");
+                labelAnalysis.Visible = true;
+
 
                 using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
                 {
@@ -670,15 +700,107 @@ namespace MariaPrintManager
                 {
                     comboColor.Enabled = false;
                 }
+                DisplayPageAndCost();
             }
         }
     }
 
-    class AuthUser
+    class WebAPI
     {
-        public static bool Authenticate(string usetname, string password)
+        /*
+         * get printing cost
+         * POST {baseurl}/api/v1/mps/quotation
+         * 
+         * print
+         * POST {baseurl}/api/v1/mps/payment
+         */
+
+        private static HttpClient client = new HttpClient();
+
+        [DataContract]
+        internal class PrintInfo
         {
-            return true;
+            [DataMember] public string cost { get; set; }
+            [DataMember] public string points { get; set; }
+            [DataMember] public string result { get; set; }
+            [DataMember] public string message { get; set; }
+        }
+
+        public static async Task<int> Quotation(int color_count, int mono_count, int blank_count, int paper_size, string room_name, string printer_name)
+        {
+            int cost = -1;
+
+            string url = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValueBaseUrl, null);
+            if (url == null)
+            {
+                return -1;
+            }
+            url += "/api/v1/mps/quotation";
+
+            PrintInfo info = await ExecutePost(url, "", "", color_count, mono_count, blank_count, paper_size, room_name, printer_name);
+
+            if (info != null)
+            {
+                if (!Int32.TryParse(info.cost, out cost))
+                {
+                    cost = -1;
+                }
+            }
+
+            return cost;
+        }
+
+        public static async Task<PrintInfo> Payment(string username, string password, int color_count, int mono_count, int blank_count, int paper_size, string room_name, string printer_name)
+        {
+            string url = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValueBaseUrl, null);
+            if (url == null)
+            {
+                return null;
+            }
+            url += "/api/v1/mps/payment";
+
+            PrintInfo info = await ExecutePost(url, username, password, color_count, mono_count, blank_count, paper_size, room_name, printer_name);
+
+            return info;
+        }
+
+        private static async Task<PrintInfo> ExecutePost(string url, string username, string password, int color_count, int mono_count, int blank_count, int paper_size, string room_name, string printer_name)
+        {
+            PrintInfo info = null;
+
+            try
+            {
+                Dictionary<string, string> param = new Dictionary<string, string>()
+                {
+                    { "username", username },
+                    { "password", password },
+                    { "color_count", color_count.ToString() },
+                    { "mono_count", mono_count.ToString() },
+                    { "blank_count", blank_count.ToString() },
+                    { "paper_size", paper_size.ToString() },
+                    { "room_name", room_name },
+                    { "printer_name", printer_name },
+                };
+                FormUrlEncodedContent content = new FormUrlEncodedContent(param);
+                HttpResponseMessage response = await client.PostAsync(url, content);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+
+                    var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(PrintInfo));
+                    using (var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(json)))
+                    {
+                        info = (PrintInfo)serializer.ReadObject(ms);
+                    }
+                }
+            }
+            catch
+            {
+                // do nothing
+            }
+
+            return info;
         }
     }
 

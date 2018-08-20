@@ -127,6 +127,12 @@
   <data name="Product" xml:space="preserve">
     <value>MariaPrintSystem</value>
   </data>
+  <data name="RegKeyMariaPrintSystem" xml:space="preserve">
+    <value>HKEY_LOCAL_MACHINE\SOFTWARE\Marbocub\MariaPrintSystem</value>
+  </data>
+  <data name="RegValueBaseUrl" xml:space="preserve">
+    <value>BaseUrl</value>
+  </data>
   <data name="RegValueDocumentNames" xml:space="preserve">
     <value>AllowDocumentNames</value>
   </data>
