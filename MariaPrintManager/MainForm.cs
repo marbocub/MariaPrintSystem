@@ -510,6 +510,9 @@ namespace MariaPrintManager
 
         private async void buttonPrint_Click(object sender, EventArgs e)
         {
+            bool duplexSelectable = comboDuplex.Enabled;
+            bool colorSelectable = comboColor.Enabled;
+
             EnableControls(false);
             string statusText = toolStripStatusLabel1.Text;
 
@@ -603,14 +606,14 @@ namespace MariaPrintManager
                 try
                 {
                     string duplex = "";
-                    if (comboDuplex.Enabled && comboDuplex.SelectedIndex == DOUBLE_SIDE)
+                    if (duplexSelectable && comboDuplex.SelectedIndex == DOUBLE_SIDE)
                     {
                         duplex = "/Duplex true /Tumble false";
                     }
 
                     string color1 = "/BitsPerPixel 24 ";
                     string color2 = "/Color 2 ";
-                    if (comboColor.Enabled && comboColor.SelectedIndex == MONO)
+                    if (colorSelectable && comboColor.SelectedIndex == MONO)
                     {
                         color1 = "/BitsPerPixel 1 ";
                         color2 = "/Color 1 ";
