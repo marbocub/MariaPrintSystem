@@ -81,7 +81,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(170, 12);
             this.label1.TabIndex = 4;
-            this.label1.Text = "課金対象プリンタを選択してください";
+            this.label1.Text = "制御対象プリンタを選択してください";
             // 
             // checkedListBoxPrinters
             // 

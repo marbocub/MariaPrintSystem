@@ -607,7 +607,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:MariaPrintSystem"
         "ProductCode" = "8:{7763BAD4-FF7B-4FE6-B0B6-762C642545BB}"
-        "PackageCode" = "8:{3CA6E68A-54EE-45B5-8007-F35F47C473CA}"
+        "PackageCode" = "8:{3AACDC7B-7D0E-4C1F-A495-28D3263D2F3C}"
         "UpgradeCode" = "8:{4A73110E-A4B9-41C5-B0B2-1D884591BDE0}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -933,7 +933,15 @@
                                             "Condition" = "8:"
                                             "Transitive" = "11:FALSE"
                                             "ValueTypes" = "3:1"
-                                            "Value" = "8:http://localhost/MariaPrintSystem"
+                                            "Value" = "8:[WEBAPIBASEURL]"
+                                            }
+                                            "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_8C63621CA93F4D0DA4E38566295B0711"
+                                            {
+                                            "Name" = "8:RoomID"
+                                            "Condition" = "8:"
+                                            "Transitive" = "11:FALSE"
+                                            "ValueTypes" = "3:1"
+                                            "Value" = "8:[ROOMID]"
                                             }
                                             "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_96CAF12489574029BDD73C05D57C286C"
                                             {
@@ -1343,7 +1351,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:仮想スプール"
+                            "Value" = "8:動作環境の設定"
                             "DefaultValue" = "8:#1214"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1356,7 +1364,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:仮想スプールフォルダを入力してください"
+                            "Value" = "8:システムの動作環境を入力してください"
                             "DefaultValue" = "8:#1215"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1369,7 +1377,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:フォルダ:"
+                            "Value" = "8:仮想スプールフォルダ:"
                             "DefaultValue" = "8:#1246"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1420,8 +1428,8 @@
                             "Type" = "3:3"
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
-                            "Setting" = "3:1"
-                            "Value" = "8:#1247"
+                            "Setting" = "3:2"
+                            "Value" = "8:認証URL:"
                             "DefaultValue" = "8:#1247"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1434,7 +1442,7 @@
                             "ContextData" = "8:Public"
                             "Attributes" = "3:2"
                             "Setting" = "3:2"
-                            "Value" = "8:EDITA2"
+                            "Value" = "8:WEBAPIBASEURL"
                             "DefaultValue" = "8:EDITA2"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1446,8 +1454,8 @@
                             "Type" = "3:3"
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
-                            "Setting" = "3:1"
-                            "Value" = "8:"
+                            "Setting" = "3:2"
+                            "Value" = "8:http://localhost/MariaPrintSystem"
                             "DefaultValue" = "8:"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1460,7 +1468,7 @@
                             "ContextData" = "8:1;True=1;False=0"
                             "Attributes" = "3:0"
                             "Setting" = "3:0"
-                            "Value" = "3:0"
+                            "Value" = "3:1"
                             "DefaultValue" = "3:1"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1472,8 +1480,8 @@
                             "Type" = "3:3"
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
-                            "Setting" = "3:1"
-                            "Value" = "8:#1248"
+                            "Setting" = "3:2"
+                            "Value" = "8:プリンタ設置場所ID:"
                             "DefaultValue" = "8:#1248"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1486,7 +1494,7 @@
                             "ContextData" = "8:Public"
                             "Attributes" = "3:2"
                             "Setting" = "3:2"
-                            "Value" = "8:EDITA3"
+                            "Value" = "8:ROOMID"
                             "DefaultValue" = "8:EDITA3"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1498,8 +1506,8 @@
                             "Type" = "3:3"
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
-                            "Setting" = "3:1"
-                            "Value" = "8:"
+                            "Setting" = "3:2"
+                            "Value" = "8:ROOM_A"
                             "DefaultValue" = "8:"
                             "UsePlugInResources" = "11:TRUE"
                             }
@@ -1512,7 +1520,7 @@
                             "ContextData" = "8:1;True=1;False=0"
                             "Attributes" = "3:0"
                             "Setting" = "3:0"
-                            "Value" = "3:0"
+                            "Value" = "3:1"
                             "DefaultValue" = "3:1"
                             "UsePlugInResources" = "11:TRUE"
                             }
