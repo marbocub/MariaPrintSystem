@@ -94,10 +94,12 @@ namespace MariaPrintConfigurator
                     int i = checkedListBoxPrinters.Items.Add(pq.Name);
                     checkedListBoxPrinters.SetItemChecked(i, true);
                 }
+                /*
                 else if (pq.QueuePrintProcessor.Name != "winprint")
                 {
                     listBoxPrinters.Items.Add(pq.Name + " (独自プリントプロセッサ)");
                 }
+                */
                 else
                 {
                     checkedListBoxPrinters.Items.Add(pq.Name);
