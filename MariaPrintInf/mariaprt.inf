@@ -19,6 +19,8 @@ DriverVer=01/01/2018,01.00.00.00
 [DriverName.NTamd64]
 "Maria Print System (A4)" = MARIAA4C.PPD,Maria_Pinter_A4_Color,Maria_Pinter_A4_Color
 "Maria Print System (A4/A3/B5/B4)" = MARIAABC.PPD,Maria_Pinter_AB_Color,Maria_Pinter_AB_Color
+"Maria Print System (A4) margin 5mm" = MARIAA45.PPD,Maria_Pinter_A4_Color,Maria_Pinter_A4_Color
+"Maria Print System (A4/A3/B5/B4) margin 5mm" = MARIAAB5.PPD,Maria_Pinter_AB_Color,Maria_Pinter_AB_Color
 
 [MARIAA4C.PPD]
 CopyFiles=@MARIAA4C.PPD
@@ -32,12 +34,26 @@ DataSection=PSCRIPT_DATA
 Include=NTPRINT.INF
 Needs=PSCRIPT.OEM
 
+[MARIAA45.PPD]
+CopyFiles=@MARIAA45.PPD
+DataSection=PSCRIPT_DATA
+Include=NTPRINT.INF
+Needs=PSCRIPT.OEM
+
+[MARIAAB5.PPD]
+CopyFiles=@MARIAAB5.PPD
+DataSection=PSCRIPT_DATA
+Include=NTPRINT.INF
+Needs=PSCRIPT.OEM
+
 [SourceDisksNames]
 1=%Disk1%,,,""
 
 [SourceDisksFiles]
 MARIAA4C.PPD =1
 MARIAABC.PPD =1
+MARIAA45.PPD =1
+MARIAAB5.PPD =1
 
 [DestinationDirs]
 DefaultDestDir=66000

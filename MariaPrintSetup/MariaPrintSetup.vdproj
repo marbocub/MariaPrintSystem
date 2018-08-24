@@ -33,7 +33,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_4798E4829A344DBEA7D1624BF2B2E7D9"
+        "MsmKey" = "8:_39786F9A49FA4B13AD271E94813B4E86"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_634BCDC438784C6DB0E13E3A4696D7C7"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -263,20 +269,6 @@
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_89BE1FA98D6A4D6E9FBED79BEDA62C9D"
-            {
-            "Name" = "8:start_tray.vbs"
-            "Condition" = "8:"
-            "Object" = "8:_4798E4829A344DBEA7D1624BF2B2E7D9"
-            "FileType" = "3:4"
-            "InstallAction" = "3:2"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:3"
-            "Identifier" = "8:_03C3D304_1313_46D7_9C10_43A89DDFE195"
-            "InstallerClass" = "11:FALSE"
-            "CustomActionData" = "8:[TARGETDIR]"
-            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_930A8A048D394A1E975436FB4D2DDAAD"
             {
             "Name" = "8:restart_service.vbs"
@@ -374,12 +366,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4798E4829A344DBEA7D1624BF2B2E7D9"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_39786F9A49FA4B13AD271E94813B4E86"
             {
-            "SourcePath" = "8:..\\start_tray.vbs"
-            "TargetName" = "8:start_tray.vbs"
+            "SourcePath" = "8:..\\MariaPrintInf\\mariaa45.ppd"
+            "TargetName" = "8:mariaa45.ppd"
             "Tag" = "8:"
-            "Folder" = "8:_D98628FE367A40A9815C9BDA1848FB54"
+            "Folder" = "8:_3DB6021EAB1949EE82DD411F0E8F5C31"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -390,7 +382,27 @@
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
-            "Exclude" = "11:TRUE"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_634BCDC438784C6DB0E13E3A4696D7C7"
+            {
+            "SourcePath" = "8:..\\MariaPrintInf\\mariaab5.ppd"
+            "TargetName" = "8:mariaab5.ppd"
+            "Tag" = "8:"
+            "Folder" = "8:_3DB6021EAB1949EE82DD411F0E8F5C31"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
@@ -607,7 +619,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:MariaPrintSystem"
         "ProductCode" = "8:{7763BAD4-FF7B-4FE6-B0B6-762C642545BB}"
-        "PackageCode" = "8:{3AACDC7B-7D0E-4C1F-A495-28D3263D2F3C}"
+        "PackageCode" = "8:{D2A8AA41-EAC1-49C5-9974-624F4D082269}"
         "UpgradeCode" = "8:{4A73110E-A4B9-41C5-B0B2-1D884591BDE0}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
