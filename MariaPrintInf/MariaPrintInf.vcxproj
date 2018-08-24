@@ -106,10 +106,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="MAKEFILE" />
+    <None Include="mariaa45.ppd" />
     <None Include="mariaa4c.ppd">
       <DeploymentContent>true</DeploymentContent>
       <FileType>Text</FileType>
     </None>
+    <None Include="mariaab5.ppd" />
     <None Include="mariaabc.ppd" />
     <None Include="mariaprt.inf">
       <DeploymentContent>true</DeploymentContent>

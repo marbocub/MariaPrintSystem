@@ -25,5 +25,11 @@
     <None Include="mariaabc.ppd">
       <Filter>ソース ファイル</Filter>
     </None>
+    <None Include="mariaa45.ppd">
+      <Filter>ソース ファイル</Filter>
+    </None>
+    <None Include="mariaab5.ppd">
+      <Filter>ソース ファイル</Filter>
+    </None>
   </ItemGroup>
 </Project>
