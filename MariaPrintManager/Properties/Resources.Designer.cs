@@ -125,6 +125,15 @@ namespace MariaPrintManager.Properties {
         }
         
         /// <summary>
+        ///   RoomID に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string RegValueRoomID {
+            get {
+                return ResourceManager.GetString("RegValueRoomID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Maria Print Manager に類似しているローカライズされた文字列を検索します。
         /// </summary>
         internal static string Title {

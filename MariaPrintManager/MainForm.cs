@@ -17,25 +17,8 @@ namespace MariaPrintManager
 {
     public partial class MainForm : Form
     {
-        private const int AUTO = 0;
-        private const int MONO = 1;
-        private const int SINGLE_SIDE = 0;
-        private const int DOUBLE_SIDE = 1;
-        string psfile = null;
-        string tmpdir = null;
-        string inkfile = null;
-        string inifile = null;
-        int pages = 0;
-        int mono_pages = 0;
-        int color_pages = 0;
-        int blank_pages = 0;
-        int color_unit = 10;
-        int mono_unit = 10;
-        int blank_unit = 10;
-        int total_price = 0;
-        bool testFile = false;
-        int paperWidth = 2100;
-        int paperHeight = 2970;
+        private PSFile ps = new PSFile();
+        PreviewBox previewBox;
 
         public MainForm()
         {
@@ -44,22 +27,10 @@ namespace MariaPrintManager
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            previewBox = new PreviewBox(pictureBoxPreview);
             this.Icon = Properties.Resources.Icon1;
             this.Text = Properties.Resources.Title;
-            toolStripStatusLabel1.Text = "";
-
-            if (System.Environment.GetCommandLineArgs().Count() > 1)
-            {
-                psfile = System.Environment.GetCommandLineArgs()[1];
-            }
-            else
-            {
-                psfile = "C:\\debug\\debug.ps";
-                testFile = true;
-            }
-            tmpdir = psfile + ".extract";
-            inkfile = psfile + ".ink";
-            inifile = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(psfile), System.IO.Path.GetFileNameWithoutExtension(psfile)) + ".ini";
+            labelStatus.Text = "";
 
             try
             {
@@ -70,40 +41,94 @@ namespace MariaPrintManager
                     comboPrinter.Items.Add(mo["Name"].ToString());
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 //
             }
-            if (testFile && System.IO.File.Exists(psfile))
-            {
-                comboPrinter.Items.Add("Microsoft Print to PDF");
-                comboPrinter.Items.Add("Microsoft XPS Document Writer");
-            }
+
             if (comboPrinter.Items.Count > 0)
             {
                 comboPrinter.SelectedIndex = 0;
                 comboPrinter.Enabled = true;
             }
 
-            if (comboPaper.Items.Count > 0)
-            {
-                comboPaper.SelectedIndex = 0;
-            }
+            comboPaper.SelectedIndex = 0;
+
             comboColor.Items.Add("自動");
-            comboColor.Items.Add("白黒(ディザ)");
-            comboColor.SelectedIndex = AUTO;
+            comboColor.Items.Add("白黒");
+            comboColor.SelectedIndex = (int)PSFile.Color.AUTO;
+
             comboDuplex.Items.Add("片面");
-            comboDuplex.Items.Add("両面");
-            comboDuplex.SelectedIndex = SINGLE_SIDE;
+            comboDuplex.Items.Add("両面(長辺とじ)");
+            comboDuplex.Items.Add("両面(短辺とじ)");
+            comboDuplex.SelectedIndex = (int)PSFile.Duplex.SIMPLEX;
+
+            if (System.Environment.GetCommandLineArgs().Count() > 1)
+            {
+                ps.FileName = System.Environment.GetCommandLineArgs()[1];
+            }
+#if DEBUG
+            else
+            {
+                ps.FileName = "C:\\debug\\debug.ps";
+                comboPrinter.Items.Add("Microsoft Print to PDF");
+                comboPrinter.Items.Add("Microsoft XPS Document Writer");
+            }
+#endif
         }
 
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
 
-        private static bool isUserNameEnabled = false;
-        private static bool isPasswordEnabled = false;
-        private static bool isPrintEnabled = false;
-        private static bool isPrinterEnabled = false;
-        private static bool isColorEnabled = false;
-        private static bool isDuplexEnabled = false;
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                System.IO.Directory.Delete(this.ps.TmpDirName, true);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                System.IO.File.Delete(this.ps.InkFileName);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+#if DEBUG
+#else
+                System.IO.File.Delete(this.ps.FileName);
+#endif
+            }
+            catch
+            {
+            }
+
+            try
+            {
+#if DEBUG
+#else
+                System.IO.File.Delete(this.ps.IniFileName);
+#endif
+            }
+            catch
+            {
+            }
+        }
+
+        private bool isUserNameEnabled = false;
+        private bool isPasswordEnabled = false;
+        private bool isPrintEnabled = false;
+        private bool isPrinterEnabled = false;
+        private bool isColorEnabled = false;
+        private bool isDuplexEnabled = false;
         private void EnableControls(bool enabled)
         {
             if (enabled)
@@ -135,7 +160,6 @@ namespace MariaPrintManager
             this.Refresh();
         }
 
-
         private async void MainForm_Shown(object sender, EventArgs e)
         {
             this.Activate();
@@ -145,24 +169,13 @@ namespace MariaPrintManager
 
             EnableControls(false);
 
-            if (inifile != null && System.IO.File.Exists(inifile))
-            {
-                int paper, width, height;
+            comboPaper.SelectedIndex = INIFILE.GetValue("DEVMODE", "PaperSize", 9, ps.IniFileName);
+            previewBox.Orientation = INIFILE.GetValue("DEVMODE", "Orientation", 1, ps.IniFileName);
 
-                Int32.TryParse(INIFILE.GetValue("DEVMODE", "PaperSize", "9", inifile), out paper);
-                Int32.TryParse(INIFILE.GetValue("DEVMODE", "PaperWidth", "2100", inifile), out width);
-                Int32.TryParse(INIFILE.GetValue("DEVMODE", "PaperLength", "2970", inifile), out height);
-
-                comboPaper.SelectedIndex = paper;
-                paperWidth = width;
-                paperHeight = height;
-            }
-
-
-            if (psfile != null && System.IO.File.Exists(psfile))
+            if (ps.IsValid())
             {
                 this.Refresh();
-                toolStripStatusLabel1.Text = "ファイル解析中";
+                labelStatus.Text = "ファイル解析中";
                 statusStrip1.Refresh();
 
                 /*
@@ -177,31 +190,11 @@ namespace MariaPrintManager
                 try
                 {
                     // サムネイル作成
-                    System.IO.Directory.CreateDirectory(tmpdir);
-                    string output = System.IO.Path.Combine(tmpdir, "def-%04d.png");
+                    System.IO.Directory.CreateDirectory(ps.TmpDirName);
+                    string output = System.IO.Path.Combine(ps.TmpDirName, "def-%04d.png");
 
-                    await Task.Run(() =>
-                    {
-                        string[] args = {
-                            "gs",
-                            "-dBATCH",
-                            "-dSAFER",
-                            "-sDEVICE=png16m",
-                            "-sOutputFile=" + output,
-                            "-dTextAlphaBits=4",
-                            "-dGraphicsAlphaBits=4",
-                            "-r96",
-                            "-dFirstPage=1",
-                            "-dLastPage=1",
-                            "-f",
-                            psfile
-                        };
-                        /*
-                            "-dUseMediaBox",
-                            "-sPAPERSIZE=a4",
-                         */
-                        int result = GSDLL.Execute(args);
-                    });
+
+                    bool b = await ps.ExportPreview1(output);
                 }
                 catch (ExternalException ex)
                 {
@@ -218,11 +211,11 @@ namespace MariaPrintManager
 
                 try
                 {
-                    if (System.IO.Directory.GetFiles(tmpdir, "*", System.IO.SearchOption.TopDirectoryOnly).Length > 0)
+                    if (System.IO.Directory.GetFiles(ps.TmpDirName, "*", System.IO.SearchOption.TopDirectoryOnly).Length > 0)
                     {
-                        drawImageFromFile(System.IO.Path.Combine(tmpdir, "def-0001.png"));
+                        previewBox.FileName = System.IO.Path.Combine(ps.TmpDirName, "def-0001.png");
                     }
-                    System.IO.Directory.Delete(tmpdir, true);
+                    System.IO.Directory.Delete(ps.TmpDirName, true);
                 }
                 catch
                 {
@@ -243,67 +236,9 @@ namespace MariaPrintManager
                 this.Refresh();
                 try
                 {
-                    await Task.Run(() =>
-                    {
-                        // インク消費量からカラー/モノクロのページ数を算出
-                        string[] args = {
-                            "gs",
-                            "-dBATCH",
-                            "-dNOPAUSE",
-                            "-dSAFER",
-                            "-dNoCancel",
-                            "-sDEVICE=inkcov",
-                            "-sOutputFile=" + inkfile,
-                            "-r75",
-                            "-f",
-                            psfile
-                        };
-                        int result = GSDLL.Execute(args);
+                    bool b = await ps.Analyze();
 
-                        Microsoft.VisualBasic.FileIO.TextFieldParser tfp = new Microsoft.VisualBasic.FileIO.TextFieldParser(inkfile);
-                        tfp.Delimiters = new string[] { " " };
-                        while (!tfp.EndOfData)
-                        {
-                            string[] fields = tfp.ReadFields();
-                            double[] ink = { 0.0, 0.0, 0.0, 0.0 };
-                            int i = 0;
-                            foreach (string s in fields)
-                            {
-                                if (s.Length > 0)
-                                {
-                                    ink[i] = Convert.ToDouble(s);
-                                    i++;
-                                }
-                                if (i > 3)
-                                {
-                                    break;
-                                }
-                            }
-                            if (ink[0] + ink[1] + ink[2] > 0.0)
-                            {
-                                color_pages++;
-                            }
-                            else if (ink[3] > 0.0)
-                            {
-                                mono_pages++;
-                            }
-                            else
-                            {
-                                blank_pages++;
-                            }
-                            pages++;
-                        }
-                        tfp.Close();
-                        try
-                        {
-                            System.IO.File.Delete(inkfile);
-                        }
-                        catch
-                        {
-                            // do nothing
-                        }
-                    });
-                    labelAnalysis.Text = "計 " + pages + " 枚";
+                    labelAnalysis.Text = "計 " + this.ps.Pages.Total + " 枚";
                     labelAnalysis.Refresh();
 
                     DisplayPageAndCost();
@@ -311,7 +246,7 @@ namespace MariaPrintManager
                 catch (Exception ex)
                 {
                     MessageBox.Show("印刷データの解析ができませんでした\r\n\r\n理由：" + ex.Message + "\r\n詳細：" + ex.HResult.ToString(), Properties.Resources.Title);
-                    toolStripStatusLabel1.Text = "解析エラー";
+                    labelStatus.Text = "解析エラー";
                 }
                 timer1.Enabled = false;
                 timer2.Enabled = false;
@@ -329,67 +264,31 @@ namespace MariaPrintManager
             this.TopMost = false;
 
             EnableControls(true);
-            if (pages > 0)
+
+            if (this.ps.Pages.Total > 0)
             {
                 textPassword.Enabled = true;
                 textUserName.Enabled = true;
                 buttonPrint.Enabled = true;
-            }
-        }
-
-        private void drawImageFromFile(string fileName)
-        {
-            try
-            {
-                System.IO.FileStream fs = new System.IO.FileStream(
-                    fileName,
-                    System.IO.FileMode.Open,
-                    System.IO.FileAccess.Read);
-                System.Drawing.Image img = System.Drawing.Image.FromStream(fs);
-                fs.Close();
-
-                int width = (int)(paperWidth / 254.0 * ((Bitmap)img).HorizontalResolution);
-                int height = (int)(paperHeight / 254.0 * ((Bitmap)img).VerticalResolution);
-
-                /*
-                Rectangle rect = new Rectangle(0, 0, width, height);
-                Bitmap bmp = ((Bitmap)img).Clone(rect, img.PixelFormat);
-                img.Dispose();
-                if (pictureBox1.Image != null)
-                {
-                    pictureBox1.Image.Dispose();
-                    pictureBox1.Image = null;
-                }
-                pictureBox1.Image = bmp;
-                */
-
-                pictureBox1.Image = img;
-            }
-            catch
-            {
-                // do nothing
-            }
-            finally 
-            {
-                // do nothing
+                textUserName.Focus();
             }
         }
 
         private async void DisplayPageAndCost()
         {
-            if (pages > 0)
+            if (this.ps.Pages.Total > 0)
             {
-                labelPageCount.Text = "計 " + pages.ToString() + " 枚";
-                toolStripStatusLabel1.Text =
-                    "カラー: " + color_pages.ToString() + " 枚　" +
-                    "白黒: " + mono_pages.ToString() + " 枚　" +
-                    "ブランク: " + blank_pages.ToString() + " 枚　" +
-                    "計: " + pages.ToString() + " 枚";
+                labelPageCount.Text = "計 " + this.ps.Pages.Total.ToString() + " 枚";
+                labelStatus.Text =
+                    "カラー: " + this.ps.Pages.Color.ToString() + " 枚　" +
+                    "白黒: " + this.ps.Pages.Mono.ToString() + " 枚　" +
+                    "ブランク: " + this.ps.Pages.Blank.ToString() + " 枚　" +
+                    "計: " + this.ps.Pages.Total.ToString() + " 枚";
 
                 int cost = -1;
                 try
                 {
-                    cost = await WebAPI.Quotation(color_pages, mono_pages, blank_pages, comboPaper.SelectedIndex, "", comboPrinter.SelectedItem.ToString());
+                    cost = await WebAPI.Quotation(this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
                 }
                 catch
                 {
@@ -397,12 +296,12 @@ namespace MariaPrintManager
                 }
                 if (cost >= 0)
                 {
-                    toolStripStatusLabel1.Text += "　" + cost.ToString() + " Points";
+                    labelStatus.Text += "　" + cost.ToString() + " Points";
                 }
             }
             else
             {
-                toolStripStatusLabel1.Text = "";
+                labelStatus.Text = "";
             }
         }
 
@@ -420,10 +319,10 @@ namespace MariaPrintManager
         {
             try
             {
-                labelAnalysis.Left = (pictureBox1.Width - labelAnalysis.Width) / 2;
-                labelAnalysis.Top = (pictureBox1.Height - labelAnalysis.Height) / 2;
+                labelAnalysis.Left = (pictureBoxPreview.Width - labelAnalysis.Width) / 2;
+                labelAnalysis.Top = (pictureBoxPreview.Height - labelAnalysis.Height) / 2;
             }
-            catch (Exception ex)
+            catch
             {
                 // do nothing
             }
@@ -439,9 +338,9 @@ namespace MariaPrintManager
         {
             try
             {
-                if (inkfile != null && System.IO.File.Exists(inkfile))
+                if (ps.InkFileName != null && System.IO.File.Exists(ps.InkFileName))
                 {
-                    System.IO.FileInfo info = new System.IO.FileInfo(inkfile);
+                    System.IO.FileInfo info = new System.IO.FileInfo(ps.InkFileName);
                     if (System.Text.RegularExpressions.Regex.IsMatch(labelAnalysis.Text, @"\w\s\d+"))
                     {
                         labelAnalysis.Text = System.Text.RegularExpressions.Regex.Replace(labelAnalysis.Text, @"(\w)\s\d+", "$1");
@@ -456,56 +355,41 @@ namespace MariaPrintManager
             }
         }
 
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        private bool mouseDown = false;
+        private void pictureBoxPreview_MouseDown(object sender, MouseEventArgs e)
         {
-            if (pictureBox1.Image != null)
+            if (pictureBoxPreview.Image != null)
             {
-                pictureBox1.Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                pictureBox1.Refresh();
+                switch (e.Button)
+                {
+                    case MouseButtons.Left:
+                        pictureBoxPreview.Cursor = Cursors.PanWest;
+                        break;
+                    case MouseButtons.Right:
+                        pictureBoxPreview.Cursor = Cursors.PanEast;
+                        break;
+                }
+                mouseDown = true;
             }
         }
 
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void pictureBoxPreview_MouseUp(object sender, MouseEventArgs e)
         {
-            this.Close();
-        }
-
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            try
+            if (pictureBoxPreview.Image != null && mouseDown)
             {
-                System.IO.Directory.Delete(tmpdir, true);
-            }
-            catch
-            {
-            }
-            try
-            {
-                System.IO.File.Delete(inkfile);
-            }
-            catch
-            {
-            }
-            try
-            {
-                if (!testFile)
+                switch (e.Button)
                 {
-                    System.IO.File.Delete(psfile);
+                    case MouseButtons.Left:
+                        previewBox.Rotate(RotateFlipType.Rotate270FlipNone);
+                        break;
+                    case MouseButtons.Right:
+                        previewBox.Rotate(RotateFlipType.Rotate90FlipNone);
+                        break;
                 }
+                pictureBoxPreview.Cursor = Cursors.Default;
+                pictureBoxPreview.Refresh();
             }
-            catch
-            {
-            }
-            try
-            {
-                if (!testFile)
-                {
-                    System.IO.File.Delete(inifile);
-                }
-            }
-            catch
-            {
-            }
+            mouseDown = false;
         }
 
         private async void buttonPrint_Click(object sender, EventArgs e)
@@ -514,7 +398,7 @@ namespace MariaPrintManager
             bool colorSelectable = comboColor.Enabled;
 
             EnableControls(false);
-            string statusText = toolStripStatusLabel1.Text;
+            string statusText = labelStatus.Text;
 
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var pwd = new char[32];
@@ -523,7 +407,7 @@ namespace MariaPrintManager
             {
                 pwd[i] = chars[random.Next(chars.Length)];
             }
-            string name = new string(pwd);
+            string jobname = new string(pwd);
 
             try
             {
@@ -559,7 +443,7 @@ namespace MariaPrintManager
                         "用紙サイズ: " + comboPaper.SelectedItem.ToString());
                 }
 
-                WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, color_pages, mono_pages, blank_pages, comboPaper.SelectedIndex, "", comboPrinter.SelectedItem.ToString());
+                WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
                 if (info == null) 
                 {
                     throw new Exception("ネットワークエラーです。接続を確認してください。");
@@ -571,96 +455,27 @@ namespace MariaPrintManager
                 labelAnalysis.Text = info.message.Replace("\\n", "\r\n");
                 labelAnalysis.Visible = true;
 
+                REG.PrinterName = printer;
+                REG.JobName = jobname;
 
-                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
-                {
-                    RegistryKey vendorKey = baseKey.CreateSubKey(@"SOFTWARE\" + Properties.Resources.Vendor, true, RegistryOptions.Volatile);
-                    RegistryKey productKey = vendorKey.CreateSubKey(Properties.Resources.Product, true, RegistryOptions.Volatile);
-
-                    productKey.SetValue(Properties.Resources.RegValuePrinter, printer);
-                    string[] names = (string[])productKey.GetValue(Properties.Resources.RegValueDocumentNames, new string[] { });
-
-                    bool hit = false;
-                    foreach (string s in names)
-                    {
-                        if (s ==  name)
-                        {
-                            hit = true;
-                            break;
-                        }
-                    }
-                    if (!hit)
-                    {
-                        Array.Resize(ref names, names.Length + 1);
-                        names[names.Length - 1] = name;
-                    }
-
-                    productKey.SetValue(Properties.Resources.RegValueDocumentNames, names, RegistryValueKind.MultiString);
-
-                    productKey.Close();
-                    vendorKey.Close();
-                }
-
-                toolStripStatusLabel1.Text = "印刷中...";
+                labelStatus.Text = "印刷中...";
                 statusStrip1.Refresh();
                 try
                 {
-                    string duplex = "";
-                    if (duplexSelectable && comboDuplex.SelectedIndex == DOUBLE_SIDE)
-                    {
-                        duplex = "/Duplex true /Tumble false";
-                    }
-
-                    string color1 = "/BitsPerPixel 24 ";
-                    string color2 = "/Color 2 ";
-                    if (colorSelectable && comboColor.SelectedIndex == MONO)
-                    {
-                        color1 = "/BitsPerPixel 1 ";
-                        color2 = "/Color 1 ";
-                    }
-
-                    string paper = "/Paper 9 ";
-                    if (comboPaper.SelectedIndex > 0)
-                    {
-                        paper = "/Paper " + Convert.ToInt32(comboPaper.SelectedIndex) + " ";
-                    }
-
-                    string[] args = {
-                        "gs",
-                        "-c",
-                        "mark " + 
-                            "/NoCancel true " + 
-                            "/OutputFile (%printer%" + (printer == null ? "" : printer) + ") " + 
-                            color1 +
-                            "/UserSettings " +
-                            "<<" +
-                                "/DocumentName (" + name + ") " + 
-                                duplex + 
-                                paper +
-                                "/Orientation 1 " +
-                                color2 +
-                            ">> " + 
-                            "(mswinpr2) finddevice " + 
-                            "putdeviceprops " + 
-                            "setdevice",
-                        "-dBATCH",
-                        "-dNOPAUSE",
-                        "-dSAFER",
-                        "-f",
-                        psfile
-                    };
-                    int result = GSDLL.Execute(args);
-
-                    if (!testFile)
-                    {
-                        System.IO.File.Delete(psfile);
-                        System.IO.File.Delete(inifile);
-                    }
+                    this.ps.Print(printer, jobname,
+                        comboPaper.SelectedIndex,
+                        colorSelectable ? (PSFile.Color)comboColor.SelectedIndex : PSFile.Color.AUTO,
+                        duplexSelectable ? (PSFile.Duplex)comboDuplex.SelectedIndex : PSFile.Duplex.SIMPLEX);
+#if DEBUG
+#else
+                    System.IO.File.Delete(this.ps.FileName);
+                    System.IO.File.Delete(this.ps.IniFileName);
+#endif
                     this.Close();
                 }
                 catch (Exception ex)
                 {
-                    toolStripStatusLabel1.Text = "印刷時エラー";
+                    labelStatus.Text = "印刷時エラー";
                     statusStrip1.Refresh();
                     throw new Exception("印刷処理ができませんでした\r\n\r\n理由：" + ex.Message + "\r\n詳細：" + ex.HResult.ToString());
                 }
@@ -668,11 +483,12 @@ namespace MariaPrintManager
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, Properties.Resources.Title, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                bool b = await WebAPI.Aleart(textUserName.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString(), ex.Message);
             }
             finally
             {
                 EnableControls(true);
-                toolStripStatusLabel1.Text = statusText;
+                labelStatus.Text = statusText;
             }
         }
 
@@ -690,7 +506,7 @@ namespace MariaPrintManager
                 {
                     if (comboDuplex.Items.Count > 0)
                     {
-                        comboDuplex.SelectedIndex = SINGLE_SIDE;
+                        comboDuplex.SelectedIndex = (int)PSFile.Duplex.SIMPLEX;
                     }
                     comboDuplex.Enabled = false;
 
@@ -706,8 +522,370 @@ namespace MariaPrintManager
                 DisplayPageAndCost();
             }
         }
+
+        private void comboColor_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DisplayPageAndCost();
+        }
+
+        private void comboDuplex_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DisplayPageAndCost();
+        }
+
+        private void comboPaper_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DisplayPageAndCost();
+        }
+
+        private void textUserName_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Enter)
+            {
+                textPassword.Focus();
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void textPassword_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Enter)
+            {
+                buttonPrint.Select();
+                e.SuppressKeyPress = true;
+            }
+        }
     }
 
+
+
+    /*
+     * class PSFile
+     */
+    class PSFile
+    {
+        private string fileName = null;
+        private PagesStore pages = new PagesStore();
+
+        public enum Duplex : int { SIMPLEX = 0, VERTICAL, HORIZONTAL };
+        public enum Color : int { AUTO = 0, MONO };
+
+        public class PagesStore
+        {
+            public int Mono = 0;
+            public int Color = 0;
+            public int Blank = 0;
+            public int Total
+            {
+                get { return Mono + Color + Blank; }
+            }
+        }
+
+        public string FileName
+        {
+            set { this.fileName = value; }
+            get { return this.fileName; }
+        }
+
+        public string TmpDirName
+        {
+            get { return FileName + ".extract"; }
+        }
+
+        public string InkFileName
+        {
+            get { return FileName + ".ink"; }
+        }
+
+        public string IniFileName
+        {
+            get { return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FileName), System.IO.Path.GetFileNameWithoutExtension(FileName)) + ".ini"; }
+        }
+
+        public PagesStore Pages
+        {
+            get { return pages; }
+        }
+
+        public bool IsValid()
+        {
+            if (fileName != null && System.IO.File.Exists(fileName))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ExportPreview1(string output)
+        {
+            await Task.Run(() =>
+            {
+                string[] args = {
+                    "gs",
+                    "-dBATCH",
+                    "-dSAFER",
+                    "-sDEVICE=png16m",
+                    "-sOutputFile=" + output,
+                    "-dTextAlphaBits=4",
+                    "-dGraphicsAlphaBits=4",
+                    "-r96",
+                    "-dFirstPage=1",
+                    "-dLastPage=1",
+                    "-f",
+                    FileName
+                };
+                int result = GSDLL.Execute(args);
+            });
+
+            return true;
+        }
+
+        public async Task<bool> Analyze()
+        {
+            bool ret = false;
+
+            await Task.Run(() =>
+            {
+                // インク消費量からカラー/モノクロのページ数を算出
+                string[] args = {
+                    "gs",
+                    "-dBATCH",
+                    "-dNOPAUSE",
+                    "-dSAFER",
+                    "-dNoCancel",
+                    "-sDEVICE=inkcov",
+                    "-sOutputFile=" + InkFileName,
+                    "-r75",
+                    "-f",
+                    FileName
+                };
+                int result = GSDLL.Execute(args);
+
+                Microsoft.VisualBasic.FileIO.TextFieldParser tfp = new Microsoft.VisualBasic.FileIO.TextFieldParser(InkFileName);
+                tfp.Delimiters = new string[] { " " };
+                while (!tfp.EndOfData)
+                {
+                    string[] fields = tfp.ReadFields();
+                    double[] ink = { 0.0, 0.0, 0.0, 0.0 };
+                    int i = 0;
+                    foreach (string s in fields)
+                    {
+                        if (s.Length > 0)
+                        {
+                            ink[i] = Convert.ToDouble(s);
+                            i++;
+                        }
+                        if (i > 3)
+                        {
+                            break;
+                        }
+                    }
+                    if (ink[0] + ink[1] + ink[2] > 0.0)
+                    {
+                        Pages.Color++;
+                    }
+                    else if (ink[3] > 0.0)
+                    {
+                        Pages.Mono++;
+                    }
+                    else
+                    {
+                        Pages.Blank++;
+                    }
+                }
+                tfp.Close();
+                ret = true;
+                try
+                {
+                    System.IO.File.Delete(InkFileName);
+                }
+                catch
+                {
+                    // ignored
+                }
+            });
+
+            return ret;
+        }
+
+        public void Print(string printer, string jobname, int paper = 0, Color color = Color.AUTO, Duplex duplex = Duplex.SIMPLEX)
+        {
+            if (fileName != null && System.IO.File.Exists(fileName))
+            {
+
+                string duplex1 = "";
+                switch(duplex)
+                {
+                    case Duplex.SIMPLEX:
+                        break;
+                    case Duplex.VERTICAL:
+                        duplex1 = "/Duplex true /Tumble false ";
+                        break;
+                    case Duplex.HORIZONTAL:
+                        duplex1 = "/Duplex true /Tumble true ";
+                        break;
+                }
+
+                string color1 = "/BitsPerPixel 24 ";
+                string color2 = "/Color 2 ";
+                if (color == Color.MONO)
+                {
+                    color2 = "/Color 1 ";
+                }
+
+                string paper1 = "/Paper 9 ";
+                if (paper > 0)
+                {
+                    paper1 = "/Paper " + Convert.ToInt32(paper) + " ";
+                }
+
+                string[] args = {
+                    "gs",
+                    "-c",
+                    "mark " +
+                        "/NoCancel true " +
+                        "/OutputFile (%printer%" + (printer == null ? "" : printer) + ") " +
+                        color1 +
+                        duplex1 +
+                        "/UserSettings " +
+                        "<<" +
+                            "/DocumentName (" + jobname + ") " +
+                            paper1 +
+                            "/Orientation 1 " +
+                            color2 +
+                            duplex1 +
+                        ">> " +
+                        "(mswinpr2) finddevice " +
+                        "putdeviceprops " +
+                        "setdevice",
+                    "-dBATCH",
+                    "-dNOPAUSE",
+                    "-dSAFER",
+                    "-f",
+                    this.fileName
+                };
+                GSDLL.Execute(args);
+            }
+        }
+    }
+
+
+
+    /*
+     * class PreviewBox
+     */
+    class PreviewBox
+    {
+        private PictureBox box = null;
+        private Image image = null;
+        private Timer timerRotate = new Timer();
+        private string fileName = null;
+        private int orientation = 1;
+
+        public PreviewBox(PictureBox box)
+        {
+            this.box = box;
+            Orientation = 1;
+        }
+
+        public int Orientation {
+            set
+            {
+                switch (value)
+                {
+                    case 1:
+                    case 2:
+                        this.orientation = value;
+                        break;
+                }
+
+                if (RotateByOrientation())
+                {
+                    box.Image = this.image;
+                }
+            }
+            get
+            {
+                return this.orientation;
+            }
+        }
+
+        private bool RotateByOrientation()
+        {
+            bool isrotate = false;
+
+            if (this.image != null)
+            {
+                switch (orientation)
+                {
+                    case 1:
+                        if (this.image.Height < this.image.Width)
+                        {
+                            this.image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                            isrotate = true;
+                        }
+                        break;
+                    case 2:
+                        if (this.image.Height > this.image.Width)
+                        {
+                            this.image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                            isrotate = true;
+                        }
+                        break;
+                }
+            }
+
+            return isrotate;
+        }
+
+        public string FileName
+        {
+            set
+            {
+                try
+                {
+                    box.Image = null;
+
+                    System.IO.FileStream fs = new System.IO.FileStream(
+                        value,
+                        System.IO.FileMode.Open,
+                        System.IO.FileAccess.Read);
+                    this.image = System.Drawing.Image.FromStream(fs);
+                    fs.Close();
+
+                    RotateByOrientation();
+                    box.Image = this.image;
+
+                    this.fileName = value;
+
+                    box.Refresh();
+                }
+                catch
+                {
+                    this.fileName = null;
+                    this.image = null;
+                }
+            }
+            get
+            {
+                return fileName;
+            }
+        }
+
+        public void Rotate(RotateFlipType type)
+        {
+            box.Image.RotateFlip(type);
+        }
+    }
+
+
+
+    /*
+     * class WebAPI
+     */
     class WebAPI
     {
         /*
@@ -716,6 +894,9 @@ namespace MariaPrintManager
          * 
          * print
          * POST {baseurl}/api/v1/mps/payment
+         * 
+         * post aleart
+         * POST {baseurl}/api/v1/mps/aleart
          */
 
         private static HttpClient client = new HttpClient();
@@ -728,19 +909,14 @@ namespace MariaPrintManager
             [DataMember] public string result { get; set; }
             [DataMember] public string message { get; set; }
         }
-
-        public static async Task<int> Quotation(int color_count, int mono_count, int blank_count, int paper_size, string room_name, string printer_name)
+        
+        public static async Task<int> Quotation(int color_count, int mono_count, int blank_count, int paper, string printer)
         {
             int cost = -1;
 
-            string url = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValueBaseUrl, null);
-            if (url == null)
-            {
-                return -1;
-            }
-            url += "/api/v1/mps/quotation";
+            string url = "/api/v1/mps/quotation";
 
-            PrintInfo info = await ExecutePost(url, "", "", color_count, mono_count, blank_count, paper_size, room_name, printer_name);
+            PrintInfo info = await ExecutePost(url, "", "", color_count, mono_count, blank_count, paper, printer, "");
 
             if (info != null)
             {
@@ -753,23 +929,36 @@ namespace MariaPrintManager
             return cost;
         }
 
-        public static async Task<PrintInfo> Payment(string username, string password, int color_count, int mono_count, int blank_count, int paper_size, string room_name, string printer_name)
+        public static async Task<PrintInfo> Payment(string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer)
         {
-            string url = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValueBaseUrl, null);
-            if (url == null)
-            {
-                return null;
-            }
-            url += "/api/v1/mps/payment";
+            string url = "/api/v1/mps/payment";
 
-            PrintInfo info = await ExecutePost(url, username, password, color_count, mono_count, blank_count, paper_size, room_name, printer_name);
+            PrintInfo info = await ExecutePost(url, username, password, color_count, mono_count, blank_count, paper, printer, "");
 
             return info;
         }
 
-        private static async Task<PrintInfo> ExecutePost(string url, string username, string password, int color_count, int mono_count, int blank_count, int paper_size, string room_name, string printer_name)
+        public static async Task<bool> Aleart(string username, int color_count, int mono_count, int blank_count, int paper, string printer, string aleart)
+        {
+            string url = "/api/v1/mps/aleart";
+
+            PrintInfo info = await ExecutePost(url, username, "", color_count, mono_count, blank_count, paper, printer, aleart);
+
+            if (info == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static async Task<PrintInfo> ExecutePost(string url, string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer, string aleart)
         {
             PrintInfo info = null;
+
+            url = REG.BaseURL + url;
+            string hostname = System.Net.Dns.GetHostName();
+            string roomid = REG.RoomID;
 
             try
             {
@@ -777,12 +966,14 @@ namespace MariaPrintManager
                 {
                     { "username", username },
                     { "password", password },
+                    { "hostname", hostname },
                     { "color_count", color_count.ToString() },
                     { "mono_count", mono_count.ToString() },
                     { "blank_count", blank_count.ToString() },
-                    { "paper_size", paper_size.ToString() },
-                    { "room_name", room_name },
-                    { "printer_name", printer_name },
+                    { "paper", paper.ToString() },
+                    { "roomid", roomid },
+                    { "printer", printer },
+                    { "aleart", aleart },
                 };
                 FormUrlEncodedContent content = new FormUrlEncodedContent(param);
                 HttpResponseMessage response = await client.PostAsync(url, content);
@@ -795,6 +986,7 @@ namespace MariaPrintManager
                     using (var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(json)))
                     {
                         info = (PrintInfo)serializer.ReadObject(ms);
+                        info.message.Replace("\\n", "\r\n");
                     }
                 }
             }
@@ -807,6 +999,86 @@ namespace MariaPrintManager
         }
     }
 
+
+
+    /*
+     * class REG
+     */
+    class REG
+    {
+        public static string JobName
+        {
+            set
+            {
+                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
+                {
+                    RegistryKey vendorKey = baseKey.CreateSubKey(@"SOFTWARE\" + Properties.Resources.Vendor, true, RegistryOptions.Volatile);
+                    RegistryKey productKey = vendorKey.CreateSubKey(Properties.Resources.Product, true, RegistryOptions.Volatile);
+
+                    string[] names = (string[])productKey.GetValue(Properties.Resources.RegValueDocumentNames, new string[] { });
+
+                    bool hit = false;
+                    foreach (string s in names)
+                    {
+                        if (s == value)
+                        {
+                            hit = true;
+                            break;
+                        }
+                    }
+                    if (!hit)
+                    {
+                        Array.Resize(ref names, names.Length + 1);
+                        names[names.Length - 1] = value;
+                    }
+
+                    productKey.SetValue(Properties.Resources.RegValueDocumentNames, names, RegistryValueKind.MultiString);
+
+                    productKey.Close();
+                    vendorKey.Close();
+                }
+            }
+        }
+
+        public static string PrinterName
+        {
+            set
+            {
+                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
+                {
+                    RegistryKey vendorKey = baseKey.CreateSubKey(@"SOFTWARE\" + Properties.Resources.Vendor, true, RegistryOptions.Volatile);
+                    RegistryKey productKey = vendorKey.CreateSubKey(Properties.Resources.Product, true, RegistryOptions.Volatile);
+
+                    productKey.SetValue(Properties.Resources.RegValuePrinter, value);
+
+                    productKey.Close();
+                    vendorKey.Close();
+                }
+            }
+        }
+
+        public static string BaseURL
+        {
+            get
+            {
+                return (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValueBaseUrl, null);
+            }
+        }
+
+        public static string RoomID
+        {
+            get
+            {
+                return (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValueRoomID, null);
+            }
+        }
+    }
+
+
+
+    /*
+     * class INIFILE
+     */
     class INIFILE
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Winapi)]
@@ -814,115 +1086,137 @@ namespace MariaPrintManager
 
         public static string GetValue(string section, string key, string default_value, string inifile)
         {
+            if (inifile == null || !System.IO.File.Exists(inifile))
+            {
+                return default_value;
+            }
+
             StringBuilder sb = new StringBuilder(1024);
 
             GetPrivateProfileString(section, key, default_value, sb, Convert.ToUInt32(sb.Capacity), inifile);
 
             return sb.ToString();
         }
-    }
 
-    class GSDLL32
-    {
-        [DllImport("gsdll32.dll", EntryPoint = "gsapi_new_instance")]
-        public static extern int gsapi_new_instance(out IntPtr pinstance, IntPtr caller_handle);
-
-        [DllImport("gsdll64.dll", EntryPoint = "gsapi_set_arg_encoding")]
-        private static extern int gsapi_set_arg_encoding(IntPtr inst, int encoding);
-
-        [DllImport("gsdll32.dll", EntryPoint = "gsapi_init_with_args")]
-        public static extern int gsapi_init_with_args(IntPtr instance, int argc, string[] argv);
-
-        [DllImport("gsdll32.dll", EntryPoint = "gsapi_exit")]
-        public static extern int gsapi_exit(IntPtr instance);
-
-        [DllImport("gsdll32.dll", EntryPoint = "gsapi_delete_instance")]
-        public static extern void gsapi_delete_instance(IntPtr instance);
-
-        public static int Execute(string[] argv)
+        public static int GetValue(string section, string key, int default_value, string inifile)
         {
-            IntPtr gs;
-            int result;
+            int value;
 
-            lock (gsinstance)
+            if (!int.TryParse(GetValue(section, key, default_value.ToString(), inifile), out value))
             {
-                try
-                {
-                    gsapi_new_instance(out gs, IntPtr.Zero);
-                    gsapi_set_arg_encoding(gs, GS_ARG_ENCODING_UTF8);
-                    result = gsapi_init_with_args(gs, argv.Length, argv);
-                    gsapi_exit(gs);
-                    gsapi_delete_instance(gs);
-                }
-                catch (Exception ex)
-                {
-                    result = -255;
-                }
+                return default_value;
             }
 
-            return result;
+            return value;
         }
-        private static object gsinstance = new object();
-        private const int GS_ARG_ENCODING_UTF8 = 1;
     }
 
-    class GSDLL64
-    {
-        [DllImport("gsdll64.dll", EntryPoint = "gsapi_new_instance")]
-        public static extern int gsapi_new_instance(out IntPtr pinstance, IntPtr caller_handle);
 
-        [DllImport("gsdll64.dll", EntryPoint = "gsapi_set_arg_encoding")]
-        private static extern int gsapi_set_arg_encoding(IntPtr inst, int encoding);
 
-        [DllImport("gsdll64.dll", EntryPoint = "gsapi_init_with_args")]
-        public static extern int gsapi_init_with_args(IntPtr instance, int argc, string[] argv);
-
-        [DllImport("gsdll64.dll", EntryPoint = "gsapi_exit")]
-        public static extern int gsapi_exit(IntPtr instance);
-
-        [DllImport("gsdll64.dll", EntryPoint = "gsapi_delete_instance")]
-        public static extern void gsapi_delete_instance(IntPtr instance);
-
-        private static void check(int result)
-        {
-            if (result != 0)
-            {
-                throw new ExternalException("DLL error", result);
-            }
-        }
-
-        public static int Execute(string[] argv)
-        {
-            IntPtr gs = IntPtr.Zero;
-            int result;
-
-            lock (gsinstance)
-            {
-                try
-                {
-                    check(gsapi_new_instance(out gs, IntPtr.Zero));
-                    check(gsapi_set_arg_encoding(gs, GS_ARG_ENCODING_UTF8));
-                    result = gsapi_init_with_args(gs, argv.Length, argv);
-                    check(gsapi_exit(gs));
-                }
-                catch (Exception ex)
-                {
-                    result = ex.HResult;
-                }
-                finally
-                {
-                    gsapi_delete_instance(gs);
-                }
-            }
-
-            return result;
-        }
-        private static object gsinstance = new object();
-        private const int GS_ARG_ENCODING_UTF8 = 1;
-    }
-
+    /*
+     * class GSDLL
+     */
     class GSDLL
     {
+        class GSDLL32
+        {
+            [DllImport("gsdll32.dll", EntryPoint = "gsapi_new_instance")]
+            public static extern int gsapi_new_instance(out IntPtr pinstance, IntPtr caller_handle);
+
+            [DllImport("gsdll64.dll", EntryPoint = "gsapi_set_arg_encoding")]
+            private static extern int gsapi_set_arg_encoding(IntPtr inst, int encoding);
+
+            [DllImport("gsdll32.dll", EntryPoint = "gsapi_init_with_args")]
+            public static extern int gsapi_init_with_args(IntPtr instance, int argc, string[] argv);
+
+            [DllImport("gsdll32.dll", EntryPoint = "gsapi_exit")]
+            public static extern int gsapi_exit(IntPtr instance);
+
+            [DllImport("gsdll32.dll", EntryPoint = "gsapi_delete_instance")]
+            public static extern void gsapi_delete_instance(IntPtr instance);
+
+            public static int Execute(string[] argv)
+            {
+                IntPtr gs;
+                int result;
+
+                lock (gsinstance)
+                {
+                    try
+                    {
+                        gsapi_new_instance(out gs, IntPtr.Zero);
+                        gsapi_set_arg_encoding(gs, GS_ARG_ENCODING_UTF8);
+                        result = gsapi_init_with_args(gs, argv.Length, argv);
+                        gsapi_exit(gs);
+                        gsapi_delete_instance(gs);
+                    }
+                    catch (Exception ex)
+                    {
+                        result = -255;
+                    }
+                }
+
+                return result;
+            }
+            private static object gsinstance = new object();
+            private const int GS_ARG_ENCODING_UTF8 = 1;
+        }
+
+        class GSDLL64
+        {
+            [DllImport("gsdll64.dll", EntryPoint = "gsapi_new_instance")]
+            public static extern int gsapi_new_instance(out IntPtr pinstance, IntPtr caller_handle);
+
+            [DllImport("gsdll64.dll", EntryPoint = "gsapi_set_arg_encoding")]
+            private static extern int gsapi_set_arg_encoding(IntPtr inst, int encoding);
+
+            [DllImport("gsdll64.dll", EntryPoint = "gsapi_init_with_args")]
+            public static extern int gsapi_init_with_args(IntPtr instance, int argc, string[] argv);
+
+            [DllImport("gsdll64.dll", EntryPoint = "gsapi_exit")]
+            public static extern int gsapi_exit(IntPtr instance);
+
+            [DllImport("gsdll64.dll", EntryPoint = "gsapi_delete_instance")]
+            public static extern void gsapi_delete_instance(IntPtr instance);
+
+            private static void check(int result)
+            {
+                if (result != 0)
+                {
+                    throw new ExternalException("DLL error", result);
+                }
+            }
+
+            public static int Execute(string[] argv)
+            {
+                IntPtr gs = IntPtr.Zero;
+                int result;
+
+                lock (gsinstance)
+                {
+                    try
+                    {
+                        check(gsapi_new_instance(out gs, IntPtr.Zero));
+                        check(gsapi_set_arg_encoding(gs, GS_ARG_ENCODING_UTF8));
+                        result = gsapi_init_with_args(gs, argv.Length, argv);
+                        check(gsapi_exit(gs));
+                    }
+                    catch (Exception ex)
+                    {
+                        result = ex.HResult;
+                    }
+                    finally
+                    {
+                        gsapi_delete_instance(gs);
+                    }
+                }
+
+                return result;
+            }
+            private static object gsinstance = new object();
+            private const int GS_ARG_ENCODING_UTF8 = 1;
+        }
+
         public static int Execute(string[] argv)
         {
             int result;

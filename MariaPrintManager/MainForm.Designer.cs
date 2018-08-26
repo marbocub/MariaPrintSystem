@@ -33,7 +33,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.labelStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.buttonPrint = new System.Windows.Forms.Button();
             this.comboDuplex = new System.Windows.Forms.ComboBox();
@@ -48,7 +48,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.textPassword = new System.Windows.Forms.TextBox();
             this.textUserName = new System.Windows.Forms.TextBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.pictureBoxPreview = new System.Windows.Forms.PictureBox();
             this.labelPageCount = new System.Windows.Forms.Label();
             this.labelAnalysis = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
@@ -57,7 +57,7 @@
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -88,18 +88,18 @@
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1});
+            this.labelStatus});
             this.statusStrip1.Location = new System.Drawing.Point(0, 539);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(584, 22);
             this.statusStrip1.TabIndex = 1;
             this.statusStrip1.Text = "statusStrip1";
             // 
-            // toolStripStatusLabel1
+            // labelStatus
             // 
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 17);
-            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            this.labelStatus.Name = "labelStatus";
+            this.labelStatus.Size = new System.Drawing.Size(64, 17);
+            this.labelStatus.Text = "labelStatus";
             // 
             // panel1
             // 
@@ -142,16 +142,17 @@
             this.comboDuplex.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboDuplex.Enabled = false;
             this.comboDuplex.FormattingEnabled = true;
-            this.comboDuplex.Location = new System.Drawing.Point(382, 79);
+            this.comboDuplex.Location = new System.Drawing.Point(342, 79);
             this.comboDuplex.Name = "comboDuplex";
-            this.comboDuplex.Size = new System.Drawing.Size(60, 20);
+            this.comboDuplex.Size = new System.Drawing.Size(100, 20);
             this.comboDuplex.TabIndex = 12;
+            this.comboDuplex.SelectedIndexChanged += new System.EventHandler(this.comboDuplex_SelectedIndexChanged);
             // 
             // label6
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(335, 82);
+            this.label6.Location = new System.Drawing.Point(295, 82);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(41, 12);
             this.label6.TabIndex = 11;
@@ -163,16 +164,17 @@
             this.comboColor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboColor.Enabled = false;
             this.comboColor.FormattingEnabled = true;
-            this.comboColor.Location = new System.Drawing.Point(249, 79);
+            this.comboColor.Location = new System.Drawing.Point(199, 79);
             this.comboColor.Name = "comboColor";
             this.comboColor.Size = new System.Drawing.Size(80, 20);
             this.comboColor.TabIndex = 10;
+            this.comboColor.SelectedIndexChanged += new System.EventHandler(this.comboColor_SelectedIndexChanged);
             // 
             // label5
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(211, 82);
+            this.label5.Location = new System.Drawing.Point(161, 82);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(32, 12);
             this.label5.TabIndex = 9;
@@ -307,8 +309,9 @@
             "PRC Envelope #10 Rotated"});
             this.comboPaper.Location = new System.Drawing.Point(87, 79);
             this.comboPaper.Name = "comboPaper";
-            this.comboPaper.Size = new System.Drawing.Size(108, 20);
+            this.comboPaper.Size = new System.Drawing.Size(58, 20);
             this.comboPaper.TabIndex = 8;
+            this.comboPaper.SelectedIndexChanged += new System.EventHandler(this.comboPaper_SelectedIndexChanged);
             // 
             // label4
             // 
@@ -369,6 +372,7 @@
             this.textPassword.PasswordChar = '*';
             this.textPassword.Size = new System.Drawing.Size(355, 19);
             this.textPassword.TabIndex = 1;
+            this.textPassword.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textPassword_KeyDown);
             // 
             // textUserName
             // 
@@ -379,20 +383,22 @@
             this.textUserName.Name = "textUserName";
             this.textUserName.Size = new System.Drawing.Size(355, 19);
             this.textUserName.TabIndex = 0;
+            this.textUserName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textUserName_KeyDown);
             // 
-            // pictureBox1
+            // pictureBoxPreview
             // 
-            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.pictureBoxPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.pictureBox1.Location = new System.Drawing.Point(0, 27);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(584, 401);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 3;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            this.pictureBoxPreview.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.pictureBoxPreview.Location = new System.Drawing.Point(0, 27);
+            this.pictureBoxPreview.Name = "pictureBoxPreview";
+            this.pictureBoxPreview.Size = new System.Drawing.Size(584, 401);
+            this.pictureBoxPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxPreview.TabIndex = 3;
+            this.pictureBoxPreview.TabStop = false;
+            this.pictureBoxPreview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxPreview_MouseDown);
+            this.pictureBoxPreview.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBoxPreview_MouseUp);
             // 
             // labelPageCount
             // 
@@ -452,7 +458,7 @@
             this.Controls.Add(this.labelAnalysis);
             this.Controls.Add(this.labelPreviewError);
             this.Controls.Add(this.labelPageCount);
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.pictureBoxPreview);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
@@ -471,7 +477,7 @@
             this.statusStrip1.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -482,7 +488,7 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox pictureBoxPreview;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.Button buttonPrint;
@@ -492,7 +498,7 @@
         private System.Windows.Forms.TextBox textUserName;
         private System.Windows.Forms.Label labelPageCount;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripStatusLabel labelStatus;
         private System.Windows.Forms.ComboBox comboPrinter;
         private System.Windows.Forms.Label labelAnalysis;
         private System.Windows.Forms.Timer timer1;
