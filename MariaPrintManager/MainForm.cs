@@ -461,7 +461,7 @@ namespace MariaPrintManager
                 WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, color_count, mono_count, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
                 if (info == null) 
                 {
-                    throw new Exception("ネットワークエラーです。接続を確認してください。");
+                    throw new Exception("ネットワークエラーです。接続を確認してください。(" + WebAPI.StatusCode.ToString() + ")");
                 }
                 if (info.result != "OK")
                 {
@@ -504,7 +504,7 @@ namespace MariaPrintManager
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, Properties.Resources.Title, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                bool b = await WebAPI.Aleart(textUserName.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString(), ex.Message);
+                bool b = await WebAPI.Alert(textUserName.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString(), ex.Message);
             }
             finally
             {
@@ -916,16 +916,17 @@ namespace MariaPrintManager
     {
         /*
          * get printing cost
-         * POST {baseurl}/api/v1/mps/quotation
+         * POST {baseurl}/quotation
          * 
          * print
-         * POST {baseurl}/api/v1/mps/payment
+         * POST {baseurl}/payment
          * 
-         * post aleart
-         * POST {baseurl}/api/v1/mps/aleart
+         * post alert
+         * POST {baseurl}/alert
          */
 
         private static HttpClient client = new HttpClient();
+        public static int StatusCode { protected set; get; } = 0;
 
         [DataContract]
         internal class PrintInfo
@@ -938,12 +939,9 @@ namespace MariaPrintManager
         
         public static async Task<int> Quotation(int color_count, int mono_count, int blank_count, int paper, string printer)
         {
+            PrintInfo info = await ExecutePost("quotation", "", "", color_count, mono_count, blank_count, paper, printer, "");
+
             int cost = -1;
-
-            string url = "/api/v1/mps/quotation";
-
-            PrintInfo info = await ExecutePost(url, "", "", color_count, mono_count, blank_count, paper, printer, "");
-
             if (info != null)
             {
                 if (!Int32.TryParse(info.cost, out cost))
@@ -957,18 +955,14 @@ namespace MariaPrintManager
 
         public static async Task<PrintInfo> Payment(string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer)
         {
-            string url = "/api/v1/mps/payment";
-
-            PrintInfo info = await ExecutePost(url, username, password, color_count, mono_count, blank_count, paper, printer, "");
+            PrintInfo info = await ExecutePost("payment", username, password, color_count, mono_count, blank_count, paper, printer, "");
 
             return info;
         }
 
-        public static async Task<bool> Aleart(string username, int color_count, int mono_count, int blank_count, int paper, string printer, string aleart)
+        public static async Task<bool> Alert(string username, int color_count, int mono_count, int blank_count, int paper, string printer, string alert)
         {
-            string url = "/api/v1/mps/aleart";
-
-            PrintInfo info = await ExecutePost(url, username, "", color_count, mono_count, blank_count, paper, printer, aleart);
+            PrintInfo info = await ExecutePost("alert", username, "", color_count, mono_count, blank_count, paper, printer, alert);
 
             if (info == null)
             {
@@ -978,14 +972,26 @@ namespace MariaPrintManager
             return true;
         }
 
-        private static async Task<PrintInfo> ExecutePost(string url, string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer, string aleart)
+        private static async Task<PrintInfo> ExecutePost(string path, string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer, string alert)
         {
+            string url = "";
+            try
+            {
+                Uri baseUri = new Uri(new Uri(REG.BaseURL), path);
+                url = baseUri.ToString();
+            }
+            catch
+            {
+                //
+            }
+#if DEBUG
+            MessageBox.Show(url);
+#endif
             PrintInfo info = null;
-
-            url = REG.BaseURL + url;
             string hostname = System.Net.Dns.GetHostName();
             string roomid = REG.RoomID;
 
+            StatusCode = 0;
             try
             {
                 Dictionary<string, string> param = new Dictionary<string, string>()
@@ -999,10 +1005,11 @@ namespace MariaPrintManager
                     { "paper", paper.ToString() },
                     { "roomid", roomid },
                     { "printer", printer },
-                    { "aleart", aleart },
+                    { "alert", alert },
                 };
                 FormUrlEncodedContent content = new FormUrlEncodedContent(param);
                 HttpResponseMessage response = await client.PostAsync(url, content);
+                StatusCode = (int)response.StatusCode;
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -1010,7 +1017,6 @@ namespace MariaPrintManager
 #if DEBUG
                     MessageBox.Show(json);
 #endif
-
                     var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(PrintInfo));
                     using (var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(json)))
                     {
