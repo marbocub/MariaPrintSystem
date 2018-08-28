@@ -73,6 +73,7 @@ namespace MariaPrintManager
                 ps.FileName = "C:\\debug\\debug.ps";
                 comboPrinter.Items.Add("Microsoft Print to PDF");
                 comboPrinter.Items.Add("Microsoft XPS Document Writer");
+                comboPrinter.Items.Add("Bad Dummy Printer");
             }
 #endif
         }
@@ -204,7 +205,7 @@ namespace MariaPrintManager
 
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
                     labelPreviewError.Visible = true;
                 }
@@ -288,7 +289,14 @@ namespace MariaPrintManager
                 int cost = -1;
                 try
                 {
-                    cost = await WebAPI.Quotation(this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
+                    int color_count = this.ps.Pages.Color;
+                    int mono_count = this.ps.Pages.Mono;
+                    if (comboColor.SelectedIndex == (int)PSFile.Color.MONO)
+                    {
+                        mono_count += color_count;
+                        color_count = 0;
+                    }
+                    cost = await WebAPI.Quotation(color_count, mono_count, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
                 }
                 catch
                 {
@@ -426,7 +434,7 @@ namespace MariaPrintManager
                 ps.PrinterName = printer;
                 if (!ps.IsValid)
                 {
-                    throw new Exception("選択されたプリンタは有効なプリンタではないようです");
+                    throw new Exception("選択されたプリンタは有効なプリンタではありません");
                 }
                 bool supported_paper = false;
                 for (int i=0; i<ps.PaperSizes.Count; i++)
@@ -443,17 +451,27 @@ namespace MariaPrintManager
                         "用紙サイズ: " + comboPaper.SelectedItem.ToString());
                 }
 
-                WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
+                int color_count = this.ps.Pages.Color;
+                int mono_count = this.ps.Pages.Mono;
+                if (comboColor.SelectedIndex == (int)PSFile.Color.MONO)
+                {
+                    mono_count += color_count;
+                    color_count = 0;
+                }
+                WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, color_count, mono_count, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
                 if (info == null) 
                 {
                     throw new Exception("ネットワークエラーです。接続を確認してください。");
                 }
                 if (info.result != "OK")
                 {
-                    throw new Exception(info.message);
+                    throw new Exception(info.message.Replace("\\n", "\r\n"));
                 }
                 labelAnalysis.Text = info.message.Replace("\\n", "\r\n");
                 labelAnalysis.Visible = true;
+                labelAnalysis.Refresh();
+
+                // Task t = Task.Run(() => MessageBox.Show(labelAnalysis.Text));
 
                 REG.PrinterName = printer;
                 REG.JobName = jobname;
@@ -471,6 +489,9 @@ namespace MariaPrintManager
                     System.IO.File.Delete(this.ps.FileName);
                     System.IO.File.Delete(this.ps.IniFileName);
 #endif
+                    labelAnalysis.Text = "印刷が送信されました";
+                    labelAnalysis.Refresh();
+                    await Task.Delay(2000);
                     this.Close();
                 }
                 catch (Exception ex)
@@ -520,6 +541,11 @@ namespace MariaPrintManager
                     comboColor.Enabled = false;
                 }
                 DisplayPageAndCost();
+            }
+            else
+            {
+                comboDuplex.Enabled = false;
+                comboColor.Enabled = false;
             }
         }
 
@@ -981,6 +1007,9 @@ namespace MariaPrintManager
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
+#if DEBUG
+                    MessageBox.Show(json);
+#endif
 
                     var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(PrintInfo));
                     using (var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(json)))
@@ -1150,7 +1179,7 @@ namespace MariaPrintManager
                         gsapi_exit(gs);
                         gsapi_delete_instance(gs);
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         result = -255;
                     }
