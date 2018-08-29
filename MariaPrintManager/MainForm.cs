@@ -504,7 +504,11 @@ namespace MariaPrintManager
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, Properties.Resources.Title, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                bool b = await WebAPI.Alert(textUserName.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString(), ex.Message);
+                string printer = "";
+                if (comboPrinter.SelectedIndex >= 0) {
+                    printer = comboPrinter.SelectedItem.ToString();
+                }
+                bool b = await WebAPI.Alert(textUserName.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, printer, ex.Message);
             }
             finally
             {
