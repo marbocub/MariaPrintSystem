@@ -661,7 +661,7 @@ namespace MariaPrintManager
                     "-sOutputFile=" + output,
                     "-dTextAlphaBits=4",
                     "-dGraphicsAlphaBits=4",
-                    "-r96",
+                    "-r120",
                     "-dFirstPage=1",
                     "-dLastPage=1",
                     "-f",
