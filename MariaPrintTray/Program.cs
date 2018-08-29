@@ -9,6 +9,7 @@ namespace MariaPrintTray
 {
     class Watcher
     {
+        FileSystemWatcher watcher1 = new FileSystemWatcher();
         private NotifyIcon notify1;
 
         public Watcher()
@@ -26,7 +27,6 @@ namespace MariaPrintTray
             {
                 path = System.Environment.GetEnvironmentVariable("TEMP");
             }
-            FileSystemWatcher watcher1 = new FileSystemWatcher();
             watcher1.Path = path;
             watcher1.NotifyFilter = NotifyFilters.FileName;
             watcher1.Filter = @"*.ps";
@@ -48,10 +48,70 @@ namespace MariaPrintTray
             notify1.Text = Properties.Resources.Title;
             notify1.Visible = true;
             notify1.ContextMenuStrip = menu1;
+
+            cleanup();
         }
 
         ~Watcher()
         {
+            cleanup();
+        }
+
+        private void deleteDirectries(string path, string name)
+        {
+            try
+            {
+                System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(path);
+                System.IO.DirectoryInfo[] dirs = di.GetDirectories(name, System.IO.SearchOption.TopDirectoryOnly);
+                foreach (System.IO.DirectoryInfo d in dirs)
+                {
+                    try
+                    {
+                        d.Delete(true);
+                    }
+                    catch
+                    {
+                        //
+                    }
+                }
+            }
+            catch
+            {
+                //
+            }
+        }
+
+        private void deleteFiles(string path, string name)
+        {
+            try
+            {
+                System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(path);
+                System.IO.FileInfo[] files = di.GetFiles(name, System.IO.SearchOption.TopDirectoryOnly);
+                foreach (System.IO.FileInfo f in files)
+                {
+                    try
+                    {
+                        f.Delete();
+                    }
+                    catch
+                    {
+                        //
+                    }
+                }
+            }
+            catch
+            {
+                //
+            }
+        }
+
+        private void cleanup()
+        {
+
+            deleteDirectries(watcher1.Path, "MR_*.extract");
+            deleteFiles(watcher1.Path, "MR_*.ink");
+            deleteFiles(watcher1.Path, "MR_*.ini");
+            deleteFiles(watcher1.Path, "MR_*.ps");
         }
 
         private void watcher1_Created(object sender, FileSystemEventArgs e)
