@@ -358,9 +358,9 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(12, 6);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(47, 12);
+            this.label1.Size = new System.Drawing.Size(61, 12);
             this.label1.TabIndex = 2;
-            this.label1.Text = "ユーザ名";
+            this.label1.Text = "アカウント名";
             // 
             // textPassword
             // 
@@ -427,6 +427,7 @@
             this.labelAnalysis.Text = "起動中…";
             this.labelAnalysis.Visible = false;
             this.labelAnalysis.SizeChanged += new System.EventHandler(this.labelAnalysis_SizeChanged);
+            this.labelAnalysis.TextChanged += new System.EventHandler(this.labelAnalysis_TextChanged);
             // 
             // timer1
             // 

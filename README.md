@@ -23,7 +23,7 @@ Subsystems
 Requirements and Limitations
 ============================
 
-This program is worked on Windows 10 version 16.07 and later with .NET 4.6.2 and later. 
+This program is worked on Windows with .NET 4.5 and later. 
 We have developed on Windows 10 version 1803 64bits environment.
 
 Installer

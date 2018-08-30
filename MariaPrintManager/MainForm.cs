@@ -12,6 +12,7 @@ using System.Management;
 using System.Runtime.Serialization;
 using Microsoft.Win32;
 using System.Net.Http;
+using System.Net;
 
 namespace MariaPrintManager
 {
@@ -46,17 +47,11 @@ namespace MariaPrintManager
                 //
             }
 
-            if (comboPrinter.Items.Count > 0)
-            {
-                comboPrinter.SelectedIndex = 0;
-                comboPrinter.Enabled = true;
-            }
-
             comboPaper.SelectedIndex = 0;
 
-            comboColor.Items.Add("自動");
-            comboColor.Items.Add("白黒");
-            comboColor.SelectedIndex = (int)PSFile.Color.AUTO;
+            comboColor.Items.Add("カラー");
+            comboColor.Items.Add("モノクロ");
+            comboColor.SelectedIndex = (int)PSFile.Color.MONO;
 
             comboDuplex.Items.Add("片面");
             comboDuplex.Items.Add("両面(長辺とじ)");
@@ -76,6 +71,11 @@ namespace MariaPrintManager
                 comboPrinter.Items.Add("Bad Dummy Printer");
             }
 #endif
+            if (comboPrinter.Items.Count > 0)
+            {
+                comboPrinter.SelectedIndex = 0;
+                comboPrinter.Enabled = true;
+            }
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -85,43 +85,13 @@ namespace MariaPrintManager
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try
-            {
-                System.IO.Directory.Delete(this.ps.TmpDirName, true);
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                System.IO.File.Delete(this.ps.InkFileName);
-            }
-            catch
-            {
-            }
-
-            try
-            {
+            FILEUTIL.SafeDelete(this.ps.TmpDirName);
+            FILEUTIL.SafeDelete(this.ps.InkFileName);
 #if DEBUG
 #else
-                System.IO.File.Delete(this.ps.FileName);
+            FILEUTIL.SafeDelete(this.ps.FileName);
+            FILEUTIL.SafeDelete(this.ps.IniFileName);
 #endif
-            }
-            catch
-            {
-            }
-
-            try
-            {
-#if DEBUG
-#else
-                System.IO.File.Delete(this.ps.IniFileName);
-#endif
-            }
-            catch
-            {
-            }
         }
 
         private bool isUserNameEnabled = false;
@@ -170,10 +140,10 @@ namespace MariaPrintManager
 
             EnableControls(false);
 
-            comboPaper.SelectedIndex = INIFILE.GetValue("DEVMODE", "PaperSize", 9, ps.IniFileName);
-            previewBox.Orientation = INIFILE.GetValue("DEVMODE", "Orientation", 1, ps.IniFileName);
+            comboPaper.SelectedIndex = INIFILE.GetValue("DEVMODE", "PaperSize", 9, this.ps.IniFileName);
+            previewBox.Orientation = INIFILE.GetValue("DEVMODE", "Orientation", 1, this.ps.IniFileName);
 
-            if (ps.IsValid())
+            if (this.ps.IsValid())
             {
                 this.Refresh();
                 labelStatus.Text = "ファイル解析中";
@@ -183,17 +153,14 @@ namespace MariaPrintManager
                  * プレビュー作成
                  */
                 labelAnalysis.Text = "印刷データを読み込んでいます…";
-                labelAnalysis.Visible = true;
-                labelAnalysis.Refresh();
                 timer1.Interval = 3000;
                 timer1.Enabled = true;
                 this.Refresh();
                 try
                 {
                     // サムネイル作成
-                    System.IO.Directory.CreateDirectory(ps.TmpDirName);
+                    System.IO.Directory.CreateDirectory(this.ps.TmpDirName);
                     string output = System.IO.Path.Combine(ps.TmpDirName, "def-%04d.png");
-
 
                     bool b = await ps.ExportPreview1(output);
                 }
@@ -202,7 +169,6 @@ namespace MariaPrintManager
                     if (ex.HResult != -100)
                     {
                         labelPreviewError.Visible = true;
-
                     }
                 }
                 catch
@@ -216,7 +182,7 @@ namespace MariaPrintManager
                     {
                         previewBox.FileName = System.IO.Path.Combine(ps.TmpDirName, "def-0001.png");
                     }
-                    System.IO.Directory.Delete(ps.TmpDirName, true);
+                    FILEUTIL.SafeDelete(ps.TmpDirName);
                 }
                 catch
                 {
@@ -230,8 +196,6 @@ namespace MariaPrintManager
                  * ページ数算出
                  */
                 labelAnalysis.Text = "ページ数をカウントしています";
-                labelAnalysis.Visible = true;
-                labelAnalysis.Refresh();
                 timer2.Interval = 1000;
                 timer2.Enabled = true;
                 this.Refresh();
@@ -240,7 +204,6 @@ namespace MariaPrintManager
                     bool b = await ps.Analyze();
 
                     labelAnalysis.Text = "計 " + this.ps.Pages.Total + " 枚";
-                    labelAnalysis.Refresh();
 
                     DisplayPageAndCost();
                 }
@@ -252,8 +215,7 @@ namespace MariaPrintManager
                 timer1.Enabled = false;
                 timer2.Enabled = false;
                 statusStrip1.Refresh();
-                labelAnalysis.Visible = false;
-                labelAnalysis.Refresh();
+                labelAnalysis.Text = "";
                 this.Refresh();
             }
 
@@ -282,7 +244,7 @@ namespace MariaPrintManager
                 labelPageCount.Text = "計 " + this.ps.Pages.Total.ToString() + " 枚";
                 labelStatus.Text =
                     "カラー: " + this.ps.Pages.Color.ToString() + " 枚　" +
-                    "白黒: " + this.ps.Pages.Mono.ToString() + " 枚　" +
+                    "モノクロ: " + this.ps.Pages.Mono.ToString() + " 枚　" +
                     "ブランク: " + this.ps.Pages.Blank.ToString() + " 枚　" +
                     "計: " + this.ps.Pages.Total.ToString() + " 枚";
 
@@ -296,7 +258,10 @@ namespace MariaPrintManager
                         mono_count += color_count;
                         color_count = 0;
                     }
-                    cost = await WebAPI.Quotation(color_count, mono_count, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
+                    if (printerIsValid())
+                    {
+                        cost = await WebAPI.Quotation(color_count, mono_count, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
+                    }
                 }
                 catch
                 {
@@ -310,6 +275,24 @@ namespace MariaPrintManager
             else
             {
                 labelStatus.Text = "";
+            }
+        }
+
+        private bool printerIsValid()
+        {
+            try
+            {
+                if (comboPrinter.SelectedIndex < 0)
+                {
+                    return false;
+                }
+                System.Drawing.Printing.PrinterSettings pset = new System.Drawing.Printing.PrinterSettings();
+                pset.PrinterName = comboPrinter.SelectedItem.ToString();
+                return pset.IsValid;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -346,7 +329,7 @@ namespace MariaPrintManager
         {
             try
             {
-                if (ps.InkFileName != null && System.IO.File.Exists(ps.InkFileName))
+                if (System.IO.File.Exists(ps.InkFileName))
                 {
                     System.IO.FileInfo info = new System.IO.FileInfo(ps.InkFileName);
                     if (System.Text.RegularExpressions.Regex.IsMatch(labelAnalysis.Text, @"\w\s\d+"))
@@ -354,7 +337,6 @@ namespace MariaPrintManager
                         labelAnalysis.Text = System.Text.RegularExpressions.Regex.Replace(labelAnalysis.Text, @"(\w)\s\d+", "$1");
                     }
                     labelAnalysis.Text += " " + (info.Length / 44).ToString();
-                    labelAnalysis.Refresh();
                 }
             }
             catch
@@ -430,16 +412,16 @@ namespace MariaPrintManager
                     throw new Exception("プリンタが選択されていません");
                 }
 
-                System.Drawing.Printing.PrinterSettings ps = new System.Drawing.Printing.PrinterSettings();
-                ps.PrinterName = printer;
-                if (!ps.IsValid)
+                System.Drawing.Printing.PrinterSettings pset = new System.Drawing.Printing.PrinterSettings();
+                pset.PrinterName = printer;
+                if (!pset.IsValid)
                 {
                     throw new Exception("選択されたプリンタは有効なプリンタではありません");
                 }
                 bool supported_paper = false;
-                for (int i=0; i<ps.PaperSizes.Count; i++)
+                for (int i=0; i<pset.PaperSizes.Count; i++)
                 {
-                    if (ps.PaperSizes[i].RawKind == comboPaper.SelectedIndex)
+                    if (pset.PaperSizes[i].RawKind == comboPaper.SelectedIndex)
                     {
                         supported_paper = true;
                         break;
@@ -461,15 +443,13 @@ namespace MariaPrintManager
                 WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, color_count, mono_count, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
                 if (info == null) 
                 {
-                    throw new Exception("ネットワークエラーです。接続を確認してください。(" + WebAPI.StatusCode.ToString() + ")");
+                    throw new Exception("認証サーバに接続できませんでした。(コード：" + WebAPI.StatusCode.ToString() + ")");
                 }
                 if (info.result != "OK")
                 {
                     throw new Exception(info.message.Replace("\\n", "\r\n"));
                 }
                 labelAnalysis.Text = info.message.Replace("\\n", "\r\n");
-                labelAnalysis.Visible = true;
-                labelAnalysis.Refresh();
 
                 // Task t = Task.Run(() => MessageBox.Show(labelAnalysis.Text));
 
@@ -481,16 +461,15 @@ namespace MariaPrintManager
                 try
                 {
                     this.ps.Print(printer, jobname,
-                        comboPaper.SelectedIndex,
-                        colorSelectable ? (PSFile.Color)comboColor.SelectedIndex : PSFile.Color.AUTO,
-                        duplexSelectable ? (PSFile.Duplex)comboDuplex.SelectedIndex : PSFile.Duplex.SIMPLEX);
+                        comboPaper.SelectedIndex < 0 ? 9 : comboPaper.SelectedIndex,
+                        comboColor.SelectedIndex < 0 ? PSFile.Color.AUTO : (PSFile.Color)comboColor.SelectedIndex,
+                        comboDuplex.SelectedIndex < 0 ? PSFile.Duplex.SIMPLEX : (PSFile.Duplex)comboDuplex.SelectedIndex);
 #if DEBUG
 #else
-                    System.IO.File.Delete(this.ps.FileName);
-                    System.IO.File.Delete(this.ps.IniFileName);
+                    FILEUTIL.SafeDelete(this.ps.FileName);
+                    FILEUTIL.SafeDelete(this.ps.IniFileName);
 #endif
                     labelAnalysis.Text = "印刷が送信されました";
-                    labelAnalysis.Refresh();
                     await Task.Delay(2000);
                     this.Close();
                 }
@@ -519,11 +498,11 @@ namespace MariaPrintManager
 
         private void comboPrinter_SelectedIndexChanged(object sender, EventArgs e)
         {
-            System.Drawing.Printing.PrinterSettings ps = new System.Drawing.Printing.PrinterSettings();
-            ps.PrinterName = comboPrinter.SelectedItem.ToString();
-            if (ps.IsValid)
+            if (printerIsValid())
             {
-                if (ps.CanDuplex)
+                System.Drawing.Printing.PrinterSettings pset = new System.Drawing.Printing.PrinterSettings();
+                pset.PrinterName = comboPrinter.SelectedItem.ToString();
+                if (pset.CanDuplex)
                 {
                     comboDuplex.Enabled = true;
                 }
@@ -536,7 +515,7 @@ namespace MariaPrintManager
                     comboDuplex.Enabled = false;
 
                 }
-                if (ps.SupportsColor)
+                if (pset.SupportsColor)
                 {
                     comboColor.Enabled = true;
                 }
@@ -544,13 +523,13 @@ namespace MariaPrintManager
                 {
                     comboColor.Enabled = false;
                 }
-                DisplayPageAndCost();
             }
             else
             {
                 comboDuplex.Enabled = false;
                 comboColor.Enabled = false;
             }
+            DisplayPageAndCost();
         }
 
         private void comboColor_SelectedIndexChanged(object sender, EventArgs e)
@@ -584,6 +563,19 @@ namespace MariaPrintManager
                 buttonPrint.Select();
                 e.SuppressKeyPress = true;
             }
+        }
+
+        private void labelAnalysis_TextChanged(object sender, EventArgs e)
+        {
+            if (((Label)sender).Text.Length > 0)
+            {
+                ((Label)sender).Visible = true;
+            }
+            else
+            {
+                ((Label)sender).Visible = false;
+            }
+            ((Label)sender).Refresh();
         }
     }
 
@@ -629,7 +621,16 @@ namespace MariaPrintManager
 
         public string IniFileName
         {
-            get { return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FileName), System.IO.Path.GetFileNameWithoutExtension(FileName)) + ".ini"; }
+            get {
+                try
+                {
+                    return System.IO.Path.Combine(System.IO.Path.GetDirectoryName("" + FileName), System.IO.Path.GetFileNameWithoutExtension("" + FileName)) + ".ini";
+                }
+                catch
+                {
+                    return null;
+                }
+            }
         }
 
         public PagesStore Pages
@@ -639,14 +640,7 @@ namespace MariaPrintManager
 
         public bool IsValid()
         {
-            if (fileName != null && System.IO.File.Exists(fileName))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return System.IO.File.Exists(fileName);
         }
 
         public async Task<bool> ExportPreview1(string output)
@@ -728,14 +722,7 @@ namespace MariaPrintManager
                 }
                 tfp.Close();
                 ret = true;
-                try
-                {
-                    System.IO.File.Delete(InkFileName);
-                }
-                catch
-                {
-                    // ignored
-                }
+                FILEUTIL.SafeDelete(InkFileName);
             });
 
             return ret;
@@ -743,7 +730,7 @@ namespace MariaPrintManager
 
         public void Print(string printer, string jobname, int paper = 0, Color color = Color.AUTO, Duplex duplex = Duplex.SIMPLEX)
         {
-            if (fileName != null && System.IO.File.Exists(fileName))
+            if (System.IO.File.Exists(fileName))
             {
 
                 string duplex1 = "";
@@ -929,7 +916,7 @@ namespace MariaPrintManager
          * POST {baseurl}/alert
          */
 
-        private static HttpClient client = new HttpClient();
+        private static HttpClient client = new HttpClient(new HttpClientHandler() { UseCookies = false });
         public static int StatusCode { protected set; get; } = 0;
 
         [DataContract]
@@ -943,7 +930,16 @@ namespace MariaPrintManager
         
         public static async Task<int> Quotation(int color_count, int mono_count, int blank_count, int paper, string printer)
         {
-            PrintInfo info = await ExecutePost("quotation", "", "", color_count, mono_count, blank_count, paper, printer, "");
+            PrintInfo info = null;
+
+            for (int i=0; i<3; i++)
+            {
+                info = await ExecutePost("quotation", "", "", color_count, mono_count, blank_count, paper, printer, "");
+                if (info != null)
+                {
+                    break;
+                }
+            }
 
             int cost = -1;
             if (info != null)
@@ -978,48 +974,41 @@ namespace MariaPrintManager
 
         private static async Task<PrintInfo> ExecutePost(string path, string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer, string alert)
         {
-            string url = "";
-            try
-            {
-                Uri baseUri = new Uri(new Uri(REG.BaseURL), path);
-                url = baseUri.ToString();
-            }
-            catch
-            {
-                //
-            }
-#if DEBUG
-            MessageBox.Show(url);
-#endif
             PrintInfo info = null;
-            string hostname = System.Net.Dns.GetHostName();
-            string roomid = REG.RoomID;
 
             StatusCode = 0;
             try
             {
+                Uri baseUri = new Uri(new Uri(REG.BaseURL), path);
+                ServicePoint sp = ServicePointManager.FindServicePoint(baseUri);
+                sp.ConnectionLeaseTimeout = 60 * 1000;
+#if DEBUG
+                Console.WriteLine(baseUri.ToString());
+#endif
+
                 Dictionary<string, string> param = new Dictionary<string, string>()
                 {
                     { "username", username },
                     { "password", password },
-                    { "hostname", hostname },
+                    { "hostname", System.Net.Dns.GetHostName() },
                     { "color_count", color_count.ToString() },
                     { "mono_count", mono_count.ToString() },
                     { "blank_count", blank_count.ToString() },
                     { "paper", paper.ToString() },
-                    { "roomid", roomid },
+                    { "roomid", REG.RoomID },
                     { "printer", printer },
                     { "alert", alert },
                 };
                 FormUrlEncodedContent content = new FormUrlEncodedContent(param);
-                HttpResponseMessage response = await client.PostAsync(url, content);
-                StatusCode = (int)response.StatusCode;
 
+                HttpResponseMessage response = await client.PostAsync(baseUri, content);
+
+                StatusCode = (int)response.StatusCode;
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
 #if DEBUG
-                    MessageBox.Show(json);
+                    Console.WriteLine(json);
 #endif
                     var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(PrintInfo));
                     using (var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(json)))
@@ -1125,7 +1114,7 @@ namespace MariaPrintManager
 
         public static string GetValue(string section, string key, string default_value, string inifile)
         {
-            if (inifile == null || !System.IO.File.Exists(inifile))
+            if (!System.IO.File.Exists(inifile))
             {
                 return default_value;
             }
@@ -1151,6 +1140,41 @@ namespace MariaPrintManager
     }
 
 
+
+    /*
+     * class FILEUTIL
+     */
+    class FILEUTIL
+    {
+        public static bool SafeDelete(string filename, bool recursive = true)
+        {
+            if (System.IO.Directory.Exists(filename))
+            {
+                try
+                {
+                    System.IO.Directory.Delete(filename, recursive);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
+            }
+            else if (System.IO.File.Exists(filename))
+            {
+                try
+                {
+                    System.IO.File.Delete(filename);
+                }
+                catch
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+    }
 
     /*
      * class GSDLL
