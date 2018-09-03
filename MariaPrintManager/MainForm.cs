@@ -142,6 +142,11 @@ namespace MariaPrintManager
 
             comboPaper.SelectedIndex = INIFILE.GetValue("DEVMODE", "PaperSize", 9, this.ps.IniFileName);
             previewBox.Orientation = INIFILE.GetValue("DEVMODE", "Orientation", 1, this.ps.IniFileName);
+            string documentname = INIFILE.GetValue("JOBINFO", "Document", "", this.ps.IniFileName);
+            if (documentname.Length > 0)
+            {
+                this.Text = Properties.Resources.Title + " - " + documentname;
+            }
 
             if (this.ps.IsValid())
             {
@@ -329,14 +334,19 @@ namespace MariaPrintManager
         {
             try
             {
+                string newtext = "";
                 if (System.IO.File.Exists(ps.InkFileName))
                 {
                     System.IO.FileInfo info = new System.IO.FileInfo(ps.InkFileName);
                     if (System.Text.RegularExpressions.Regex.IsMatch(labelAnalysis.Text, @"\w\s\d+"))
                     {
-                        labelAnalysis.Text = System.Text.RegularExpressions.Regex.Replace(labelAnalysis.Text, @"(\w)\s\d+", "$1");
+                        newtext = System.Text.RegularExpressions.Regex.Replace(labelAnalysis.Text, @"(\w)\s\d+", "$1");
                     }
-                    labelAnalysis.Text += " " + (info.Length / 44).ToString();
+                    else
+                    {
+                        newtext = labelAnalysis.Text;
+                    }
+                    labelAnalysis.Text = newtext + " " + (info.Length / 44).ToString();
                 }
             }
             catch
@@ -440,7 +450,7 @@ namespace MariaPrintManager
                     mono_count += color_count;
                     color_count = 0;
                 }
-                WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, color_count, mono_count, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString());
+                WebAPI.PrintInfo info = await WebAPI.Payment(textUserName.Text, textPassword.Text, color_count, mono_count, this.ps.Pages.Blank, comboPaper.SelectedIndex, comboPrinter.SelectedItem.ToString(), INIFILE.GetValue("JOBINFO", "Document", "", this.ps.IniFileName));
                 if (info == null) 
                 {
                     throw new Exception("認証サーバに接続できませんでした。(コード：" + WebAPI.StatusCode.ToString() + ")");
@@ -487,7 +497,14 @@ namespace MariaPrintManager
                 if (comboPrinter.SelectedIndex >= 0) {
                     printer = comboPrinter.SelectedItem.ToString();
                 }
-                bool b = await WebAPI.Alert(textUserName.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, printer, ex.Message);
+                try
+                {
+                    bool b = await WebAPI.Alert(textUserName.Text, this.ps.Pages.Color, this.ps.Pages.Mono, this.ps.Pages.Blank, comboPaper.SelectedIndex, printer, INIFILE.GetValue("JOBINFO", "Document", "", this.ps.IniFileName), ex.Message);
+                }
+                catch
+                {
+                    //
+                }
             }
             finally
             {
@@ -927,15 +944,15 @@ namespace MariaPrintManager
             [DataMember] public string result { get; set; }
             [DataMember] public string message { get; set; }
         }
-        
+
         public static async Task<int> Quotation(int color_count, int mono_count, int blank_count, int paper, string printer)
         {
             PrintInfo info = null;
 
             for (int i=0; i<3; i++)
             {
-                info = await ExecutePost("quotation", "", "", color_count, mono_count, blank_count, paper, printer, "");
-                if (info != null)
+                info = await ExecutePost("quotation", "", "", color_count, mono_count, blank_count, paper, printer, "", "");
+                if (StatusCode != -53)
                 {
                     break;
                 }
@@ -953,16 +970,34 @@ namespace MariaPrintManager
             return cost;
         }
 
-        public static async Task<PrintInfo> Payment(string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer)
+        public static async Task<PrintInfo> Payment(string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer, string document)
         {
-            PrintInfo info = await ExecutePost("payment", username, password, color_count, mono_count, blank_count, paper, printer, "");
+            PrintInfo info = null;
+
+            for (int i=0; i<3; i++)
+            {
+                info = await ExecutePost("payment", username, password, color_count, mono_count, blank_count, paper, printer, document, "");
+                if (StatusCode != -53)
+                {
+                    break;
+                }
+            }
 
             return info;
         }
 
-        public static async Task<bool> Alert(string username, int color_count, int mono_count, int blank_count, int paper, string printer, string alert)
+        public static async Task<bool> Alert(string username, int color_count, int mono_count, int blank_count, int paper, string printer, string document, string alert)
         {
-            PrintInfo info = await ExecutePost("alert", username, "", color_count, mono_count, blank_count, paper, printer, alert);
+            PrintInfo info = null;
+
+            for (int i=0; i<3; i++)
+            {
+                info = await ExecutePost("alert", username, "", color_count, mono_count, blank_count, paper, printer, document, alert);
+                if (StatusCode != -53)
+                {
+                    break;
+                }
+            }
 
             if (info == null)
             {
@@ -972,11 +1007,12 @@ namespace MariaPrintManager
             return true;
         }
 
-        private static async Task<PrintInfo> ExecutePost(string path, string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer, string alert)
+        private static async Task<PrintInfo> ExecutePost(string path, string username, string password, int color_count, int mono_count, int blank_count, int paper, string printer, string document, string alert)
         {
             PrintInfo info = null;
 
             StatusCode = 0;
+
             try
             {
                 Uri baseUri = new Uri(new Uri(REG.BaseURL), path);
@@ -997,11 +1033,25 @@ namespace MariaPrintManager
                     { "paper", paper.ToString() },
                     { "roomid", REG.RoomID },
                     { "printer", printer },
+                    { "driver", GetPrinterDriver(printer) },
+                    { "document", document },
                     { "alert", alert },
                 };
                 FormUrlEncodedContent content = new FormUrlEncodedContent(param);
 
-                HttpResponseMessage response = await client.PostAsync(baseUri, content);
+                HttpResponseMessage response = null;
+                try
+                {
+                    response = await client.PostAsync(baseUri, content);
+                }
+                catch (HttpRequestException)
+                {
+#if DEBUG
+                    Console.WriteLine("PostAsync error");
+#endif
+                    StatusCode = -53;
+                    throw;
+                }
 
                 StatusCode = (int)response.StatusCode;
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
@@ -1024,6 +1074,33 @@ namespace MariaPrintManager
             }
 
             return info;
+        }
+
+        private static string GetPrinterDriver(string printer)
+        {
+            string driver = null;
+            try
+            {
+                ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_Printer where Name='" + printer + "'");
+                ManagementObjectCollection moc = mos.Get();
+                if (moc.Count <= 0)
+                {
+                    driver = null;
+                }
+                else
+                {
+                    foreach (ManagementObject mo in moc)
+                    {
+                        driver = mo["DriverName"].ToString();
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+                //
+            }
+            return driver;
         }
     }
 
