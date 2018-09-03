@@ -11,6 +11,7 @@ namespace MariaPrintTray
     {
         FileSystemWatcher watcher1 = new FileSystemWatcher();
         private NotifyIcon notify1;
+        private int clickCount = 0;
 
         public Watcher()
         {
@@ -19,7 +20,7 @@ namespace MariaPrintTray
             {
                 path = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyPortMonitorSettings, Properties.Resources.RegValueDirectory, null);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 path = null;
             }
@@ -42,12 +43,14 @@ namespace MariaPrintTray
             menuItemAbout.Click += new System.EventHandler(menuItemAbout_Click);
             menuItemExit.Text = Properties.Resources.MenuTextExit;
             menuItemExit.Click += new System.EventHandler(menuItemExit_Click);
+            menuItemExit.Enabled = false;
 
             notify1 = new NotifyIcon();
             notify1.Icon = Properties.Resources.Icon1;
             notify1.Text = Properties.Resources.Title;
             notify1.Visible = true;
             notify1.ContextMenuStrip = menu1;
+            notify1.DoubleClick += new System.EventHandler(notifyIcon_DoubleClick);
 
             cleanup();
         }
@@ -124,7 +127,7 @@ namespace MariaPrintTray
             {
                 gsshell = (string)Microsoft.Win32.Registry.GetValue(Properties.Resources.RegKeyMariaPrintSystem, Properties.Resources.RegValuePsShell, null);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 gsshell = null;
             }
@@ -140,8 +143,9 @@ namespace MariaPrintTray
                         psi.Arguments = System.IO.Path.Combine(dirName, psFileName);
                         System.Diagnostics.Process p = System.Diagnostics.Process.Start(psi);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
+                        //
                     }
                 }
             }
@@ -156,6 +160,20 @@ namespace MariaPrintTray
         {
             notify1.Visible = false;
             Application.Exit();
+        }
+
+        private void notifyIcon_DoubleClick(object sender, EventArgs e)
+        {
+            clickCount++;
+            if (clickCount == 10)
+            {
+                notify1.ContextMenuStrip.Items[1].Enabled = true;
+            }
+            else if (clickCount > 10)
+            {
+                notify1.ContextMenuStrip.Items[1].Enabled = false;
+                clickCount = 0;
+            }
         }
     }
 
@@ -185,6 +203,10 @@ namespace MariaPrintTray
                 Watcher watcher1 = new Watcher();
 
                 Application.Run();
+            }
+            catch
+            {
+                //
             }
             finally
             {
