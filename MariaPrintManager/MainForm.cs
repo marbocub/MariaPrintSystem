@@ -235,6 +235,20 @@ namespace MariaPrintManager
 
             if (this.ps.Pages.Total > 0)
             {
+                if (INIFILE.GetValue("DEVMODE", "Color", 2, this.ps.IniFileName) == 1)
+                {
+                    comboColor.Enabled = false;
+                    comboColor.SelectedIndex = (int)PSFile.Color.MONO;
+                }
+                if (this.ps.Pages.Total > 1)
+                {
+                    comboDuplex.Enabled = true;
+                }
+                else
+                {
+                    comboDuplex.SelectedIndex = (int)PSFile.Duplex.SIMPLEX;
+                    comboDuplex.Enabled = false;
+                }
                 textPassword.Enabled = true;
                 textUserName.Enabled = true;
                 buttonPrint.Enabled = true;
@@ -479,8 +493,9 @@ namespace MariaPrintManager
                     FILEUTIL.SafeDelete(this.ps.FileName);
                     FILEUTIL.SafeDelete(this.ps.IniFileName);
 #endif
+                    await Task.Delay(1500);
                     labelAnalysis.Text = "印刷が送信されました";
-                    await Task.Delay(2000);
+                    await Task.Delay(1500);
                     this.Close();
                 }
                 catch (Exception ex)
@@ -521,7 +536,10 @@ namespace MariaPrintManager
                 pset.PrinterName = comboPrinter.SelectedItem.ToString();
                 if (pset.CanDuplex)
                 {
-                    comboDuplex.Enabled = true;
+                    if (this.ps.Pages.Total > 1)
+                    {
+                        comboDuplex.Enabled = true;
+                    }
                 }
                 else
                 {
@@ -532,13 +550,21 @@ namespace MariaPrintManager
                     comboDuplex.Enabled = false;
 
                 }
-                if (pset.SupportsColor)
+                if (INIFILE.GetValue("DEVMODE", "Color", 2, this.ps.IniFileName) == 1)
                 {
-                    comboColor.Enabled = true;
+                    comboColor.Enabled = false;
+                    comboColor.SelectedIndex = (int)PSFile.Color.MONO;
                 }
                 else
                 {
-                    comboColor.Enabled = false;
+                    if (pset.SupportsColor)
+                    {
+                        comboColor.Enabled = true;
+                    }
+                    else
+                    {
+                        comboColor.Enabled = false;
+                    }
                 }
             }
             else
