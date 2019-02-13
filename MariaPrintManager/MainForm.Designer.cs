@@ -334,6 +334,7 @@
             this.comboPrinter.Size = new System.Drawing.Size(355, 20);
             this.comboPrinter.TabIndex = 6;
             this.comboPrinter.SelectedIndexChanged += new System.EventHandler(this.comboPrinter_SelectedIndexChanged);
+            this.comboPrinter.EnabledChanged += new System.EventHandler(this.comboPrinter_EnabledChanged);
             // 
             // label3
             // 

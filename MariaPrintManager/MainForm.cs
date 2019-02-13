@@ -20,13 +20,33 @@ namespace MariaPrintManager
     {
         private PSFile ps = new PSFile();
         PreviewBox previewBox;
+        object lockObject = new object();
 
         public MainForm()
         {
             InitializeComponent();
         }
 
-        private void MainForm_Load(object sender, EventArgs e)
+        class PrinterComboItem
+        {
+            public enum Type : int { PHYSICAL = 0, VIRTUAL, DUMMY, INITIAL_MESSAGE };
+
+            public Type PrinterType { get; set; }
+            public string Text { get; set; }
+
+            public PrinterComboItem(string text)
+            {
+                this.PrinterType = 0;
+                this.Text = text;
+            }
+
+            public override string ToString()
+            {
+                return this.Text;
+            }
+        }
+
+        private async void MainForm_Load(object sender, EventArgs e)
         {
             previewBox = new PreviewBox(pictureBoxPreview);
             this.Icon = Properties.Resources.Icon1;
@@ -73,8 +93,54 @@ namespace MariaPrintManager
 #endif
             if (comboPrinter.Items.Count > 0)
             {
-                comboPrinter.SelectedIndex = 0;
-                comboPrinter.Enabled = true;
+                PrinterComboItem message_text = new PrinterComboItem(@"取得中...");
+                message_text.PrinterType = PrinterComboItem.Type.INITIAL_MESSAGE;
+                comboPrinter.Items.Add(message_text);
+                comboPrinter.SelectedItem = message_text;
+
+                if (REG.PrinterName != null)
+                {
+                    comboPrinter.SelectedItem = REG.PrinterName;
+                }
+                else
+                {
+                    try
+                    {
+                        string printer = await WebAPI.Printer();
+                        if (printer != null && printer.Length > 0)
+                        {
+                            comboPrinter.SelectedItem = printer;
+                        }
+                    }
+                    catch
+                    {
+                        // do nothing
+                    }
+                }
+
+                if (comboPrinter.SelectedItem == message_text)
+                {
+                    comboPrinter.SelectedIndex = 0;
+                }
+                lock(lockObject)
+                {
+                    isPrinterEnabled = comboPrinter.Enabled = true;
+                }
+            }
+        }
+
+        private void comboPrinter_EnabledChanged(object sender, EventArgs e)
+        {
+            for (int i=comboPrinter.Items.Count-1; i>=0 ; i--)
+            {
+                if (typeof(PrinterComboItem) == comboPrinter.Items[i].GetType())
+                {
+                    PrinterComboItem item = (PrinterComboItem) comboPrinter.Items[i];
+                    if (item.PrinterType == PrinterComboItem.Type.INITIAL_MESSAGE)
+                    {
+                        comboPrinter.Items.RemoveAt(i);
+                    }
+                }
             }
         }
 
@@ -102,33 +168,36 @@ namespace MariaPrintManager
         private bool isDuplexEnabled = false;
         private void EnableControls(bool enabled)
         {
-            if (enabled)
+            lock (lockObject)
             {
-                textUserName.Enabled = isUserNameEnabled;
-                textPassword.Enabled = isPasswordEnabled;
-                buttonPrint.Enabled = isPrintEnabled;
-                comboPrinter.Enabled = isPrinterEnabled;
-                comboColor.Enabled = isColorEnabled;
-                comboDuplex.Enabled = isDuplexEnabled;
-            }
-            else
-            {
-                isUserNameEnabled = textUserName.Enabled;
-                isPasswordEnabled = textPassword.Enabled;
-                isPrintEnabled = buttonPrint.Enabled;
-                isPrinterEnabled = comboPrinter.Enabled;
-                isColorEnabled = comboColor.Enabled;
-                isDuplexEnabled = comboDuplex.Enabled;
+                if (enabled)
+                {
+                    textUserName.Enabled = isUserNameEnabled;
+                    textPassword.Enabled = isPasswordEnabled;
+                    buttonPrint.Enabled = isPrintEnabled;
+                    comboPrinter.Enabled = isPrinterEnabled;
+                    comboColor.Enabled = isColorEnabled;
+                    comboDuplex.Enabled = isDuplexEnabled;
+                }
+                else
+                {
+                    isUserNameEnabled = textUserName.Enabled;
+                    isPasswordEnabled = textPassword.Enabled;
+                    isPrintEnabled = buttonPrint.Enabled;
+                    isPrinterEnabled = comboPrinter.Enabled;
+                    isColorEnabled = comboColor.Enabled;
+                    isDuplexEnabled = comboDuplex.Enabled;
 
-                textUserName.Enabled = false;
-                textPassword.Enabled = false;
-                buttonPrint.Enabled = false;
-                comboPrinter.Enabled = false;
-                comboColor.Enabled = false;
-                comboDuplex.Enabled = false;
+                    textUserName.Enabled = false;
+                    textPassword.Enabled = false;
+                    buttonPrint.Enabled = false;
+                    comboPrinter.Enabled = false;
+                    comboColor.Enabled = false;
+                    comboDuplex.Enabled = false;
+                }
+                this.UseWaitCursor = !enabled;
+                this.Refresh();
             }
-            this.UseWaitCursor = !enabled;
-            this.Refresh();
         }
 
         private async void MainForm_Shown(object sender, EventArgs e)
@@ -158,6 +227,7 @@ namespace MariaPrintManager
                  * プレビュー作成
                  */
                 labelAnalysis.Text = "印刷データを読み込んでいます…";
+                labelAnalysis.Refresh();
                 timer1.Interval = 3000;
                 timer1.Enabled = true;
                 this.Refresh();
@@ -201,6 +271,7 @@ namespace MariaPrintManager
                  * ページ数算出
                  */
                 labelAnalysis.Text = "ページ数をカウントしています";
+                labelAnalysis.Refresh();
                 timer2.Interval = 1000;
                 timer2.Enabled = true;
                 this.Refresh();
@@ -209,6 +280,7 @@ namespace MariaPrintManager
                     bool b = await ps.Analyze();
 
                     labelAnalysis.Text = "計 " + this.ps.Pages.Total + " 枚";
+                    labelAnalysis.Refresh();
 
                     DisplayPageAndCost();
                 }
@@ -235,24 +307,27 @@ namespace MariaPrintManager
 
             if (this.ps.Pages.Total > 0)
             {
-                if (INIFILE.GetValue("DEVMODE", "Color", 2, this.ps.IniFileName) == 1)
+                lock(lockObject)
                 {
-                    comboColor.Enabled = false;
-                    comboColor.SelectedIndex = (int)PSFile.Color.MONO;
+                    if (INIFILE.GetValue("DEVMODE", "Color", 2, this.ps.IniFileName) == 1)
+                    {
+                        isColorEnabled = comboColor.Enabled = false;
+                        comboColor.SelectedIndex = (int)PSFile.Color.MONO;
+                    }
+                    if (this.ps.Pages.Total > 1)
+                    {
+                        isDuplexEnabled = comboDuplex.Enabled = true;
+                    }
+                    else
+                    {
+                        comboDuplex.SelectedIndex = (int)PSFile.Duplex.SIMPLEX;
+                        isDuplexEnabled = comboDuplex.Enabled = false;
+                    }
+                    isPasswordEnabled = textPassword.Enabled = true;
+                    isUserNameEnabled = textUserName.Enabled = true;
+                    isPrintEnabled = buttonPrint.Enabled = true;
+                    textUserName.Focus();
                 }
-                if (this.ps.Pages.Total > 1)
-                {
-                    comboDuplex.Enabled = true;
-                }
-                else
-                {
-                    comboDuplex.SelectedIndex = (int)PSFile.Duplex.SIMPLEX;
-                    comboDuplex.Enabled = false;
-                }
-                textPassword.Enabled = true;
-                textUserName.Enabled = true;
-                buttonPrint.Enabled = true;
-                textUserName.Focus();
             }
         }
 
@@ -341,6 +416,7 @@ namespace MariaPrintManager
         private void timer1_Tick(object sender, EventArgs e)
         {
             labelAnalysis.Text += "…しばらくお待ちください";
+            labelAnalysis.Refresh();
             timer1.Enabled = false;
         }
 
@@ -361,6 +437,7 @@ namespace MariaPrintManager
                         newtext = labelAnalysis.Text;
                     }
                     labelAnalysis.Text = newtext + " " + (info.Length / 44).ToString();
+                    labelAnalysis.Refresh();
                 }
             }
             catch
@@ -408,8 +485,8 @@ namespace MariaPrintManager
 
         private async void buttonPrint_Click(object sender, EventArgs e)
         {
-            bool duplexSelectable = comboDuplex.Enabled;
-            bool colorSelectable = comboColor.Enabled;
+            //bool duplexSelectable = comboDuplex.Enabled;
+            //bool colorSelectable = comboColor.Enabled;
 
             EnableControls(false);
             string statusText = labelStatus.Text;
@@ -474,6 +551,7 @@ namespace MariaPrintManager
                     throw new Exception(info.message.Replace("\\n", "\r\n"));
                 }
                 labelAnalysis.Text = info.message.Replace("\\n", "\r\n");
+                labelAnalysis.Refresh();
 
                 // Task t = Task.Run(() => MessageBox.Show(labelAnalysis.Text));
 
@@ -495,6 +573,7 @@ namespace MariaPrintManager
 #endif
                     await Task.Delay(1500);
                     labelAnalysis.Text = "印刷が送信されました";
+                    labelAnalysis.Refresh();
                     await Task.Delay(1500);
                     this.Close();
                 }
@@ -518,11 +597,15 @@ namespace MariaPrintManager
                 }
                 catch
                 {
-                    //
+#if DEBUG
+                    Console.WriteLine("double exception");
+#endif
                 }
             }
             finally
             {
+                labelAnalysis.Text = "";
+                labelAnalysis.Refresh();
                 EnableControls(true);
                 labelStatus.Text = statusText;
             }
@@ -530,47 +613,50 @@ namespace MariaPrintManager
 
         private void comboPrinter_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (printerIsValid())
+            lock(lockObject)
             {
-                System.Drawing.Printing.PrinterSettings pset = new System.Drawing.Printing.PrinterSettings();
-                pset.PrinterName = comboPrinter.SelectedItem.ToString();
-                if (pset.CanDuplex)
+                if (printerIsValid())
                 {
-                    if (this.ps.Pages.Total > 1)
+                    System.Drawing.Printing.PrinterSettings pset = new System.Drawing.Printing.PrinterSettings();
+                    pset.PrinterName = comboPrinter.SelectedItem.ToString();
+                    if (pset.CanDuplex)
                     {
-                        comboDuplex.Enabled = true;
-                    }
-                }
-                else
-                {
-                    if (comboDuplex.Items.Count > 0)
-                    {
-                        comboDuplex.SelectedIndex = (int)PSFile.Duplex.SIMPLEX;
-                    }
-                    comboDuplex.Enabled = false;
-
-                }
-                if (INIFILE.GetValue("DEVMODE", "Color", 2, this.ps.IniFileName) == 1)
-                {
-                    comboColor.Enabled = false;
-                    comboColor.SelectedIndex = (int)PSFile.Color.MONO;
-                }
-                else
-                {
-                    if (pset.SupportsColor)
-                    {
-                        comboColor.Enabled = true;
+                        if (this.ps.Pages.Total > 1)
+                        {
+                            isDuplexEnabled = comboDuplex.Enabled = true;
+                        }
                     }
                     else
                     {
-                        comboColor.Enabled = false;
+                        if (comboDuplex.Items.Count > 0)
+                        {
+                            comboDuplex.SelectedIndex = (int)PSFile.Duplex.SIMPLEX;
+                        }
+                        isDuplexEnabled = comboDuplex.Enabled = false;
+
+                    }
+                    if (INIFILE.GetValue("DEVMODE", "Color", 2, this.ps.IniFileName) == 1)
+                    {
+                        isColorEnabled = comboColor.Enabled = false;
+                        comboColor.SelectedIndex = (int)PSFile.Color.MONO;
+                    }
+                    else
+                    {
+                        if (pset.SupportsColor)
+                        {
+                            isColorEnabled = comboColor.Enabled = true;
+                        }
+                        else
+                        {
+                            isColorEnabled = comboColor.Enabled = false;
+                        }
                     }
                 }
-            }
-            else
-            {
-                comboDuplex.Enabled = false;
-                comboColor.Enabled = false;
+                else
+                {
+                    isDuplexEnabled = comboDuplex.Enabled = false;
+                    isColorEnabled = comboColor.Enabled = false;
+                }
             }
             DisplayPageAndCost();
         }
@@ -618,7 +704,7 @@ namespace MariaPrintManager
             {
                 ((Label)sender).Visible = false;
             }
-            ((Label)sender).Refresh();
+            //((Label)sender).Refresh();
         }
     }
 
@@ -949,6 +1035,9 @@ namespace MariaPrintManager
     class WebAPI
     {
         /*
+         * get default printer
+         * POST {baseurl}/defaultprinter
+         * 
          * get printing cost
          * POST {baseurl}/quotation
          * 
@@ -969,6 +1058,28 @@ namespace MariaPrintManager
             [DataMember] public string points { get; set; }
             [DataMember] public string result { get; set; }
             [DataMember] public string message { get; set; }
+        }
+
+        public static async Task<string> Printer()
+        {
+            PrintInfo info = null;
+
+            for (int i = 0; i < 3; i++)
+            {
+                info = await ExecutePost("defaultprinter", "", "", 0, 0, 0, 0, "", "", "");
+                if (StatusCode != -53)
+                {
+                    break;
+                }
+            }
+
+            string printer = null;
+            if (info != null)
+            {
+                printer = info.message;
+            }
+
+            return printer;
         }
 
         public static async Task<int> Quotation(int color_count, int mono_count, int blank_count, int paper, string printer)
@@ -1185,6 +1296,19 @@ namespace MariaPrintManager
                     productKey.Close();
                     vendorKey.Close();
                 }
+            }
+
+            get
+            {
+                string value = null;
+                using (var regkey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\" + Properties.Resources.Vendor + @"\" + Properties.Resources.Product, false))
+                {
+                    if (regkey != null)
+                    {
+                        value = (string)regkey.GetValue(Properties.Resources.RegValuePrinter, null);
+                    }
+                }
+                return value;
             }
         }
 
