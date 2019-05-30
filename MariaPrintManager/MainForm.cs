@@ -565,7 +565,9 @@ namespace MariaPrintManager
                     this.ps.Print(printer, jobname,
                         comboPaper.SelectedIndex < 0 ? 9 : comboPaper.SelectedIndex,
                         comboColor.SelectedIndex < 0 ? PSFile.Color.AUTO : (PSFile.Color)comboColor.SelectedIndex,
-                        comboDuplex.SelectedIndex < 0 ? PSFile.Duplex.SIMPLEX : (PSFile.Duplex)comboDuplex.SelectedIndex);
+                        comboDuplex.SelectedIndex < 0 ? PSFile.Duplex.SIMPLEX : (PSFile.Duplex)comboDuplex.SelectedIndex,
+                        INIFILE.GetValue("DEVMODE", "Collate", 1, this.ps.IniFileName) == 1,
+                        INIFILE.GetValue("DEVMODE", "Copies", 1, this.ps.IniFileName));
 #if DEBUG
 #else
                     FILEUTIL.SafeDelete(this.ps.FileName);
@@ -857,7 +859,7 @@ namespace MariaPrintManager
             return ret;
         }
 
-        public void Print(string printer, string jobname, int paper = 0, Color color = Color.AUTO, Duplex duplex = Duplex.SIMPLEX)
+        public void Print(string printer, string jobname, int paper = 0, Color color = Color.AUTO, Duplex duplex = Duplex.SIMPLEX, bool collate = true, int copies = 1)
         {
             if (System.IO.File.Exists(fileName))
             {
@@ -888,6 +890,16 @@ namespace MariaPrintManager
                     paper1 = "/Paper " + Convert.ToInt32(paper) + " ";
                 }
 
+                string ignore1 = "";
+                if (collate)
+                {
+                    ignore1 = "/.IgnoreNumCopies true ";
+                }
+                else
+                {
+                    copies = 1;
+                }
+
                 string[] args = {
                     "gs",
                     "-c",
@@ -896,6 +908,7 @@ namespace MariaPrintManager
                         "/OutputFile (%printer%" + (printer == null ? "" : printer) + ") " +
                         color1 +
                         duplex1 +
+                        ignore1 +
                         "/UserSettings " +
                         "<<" +
                             "/DocumentName (" + jobname + ") " +
@@ -913,7 +926,10 @@ namespace MariaPrintManager
                     "-f",
                     this.fileName
                 };
-                GSDLL.Execute(args);
+                for (int i=0; i<copies; i++)
+                {
+                    GSDLL.Execute(args);
+                }
             }
         }
     }
