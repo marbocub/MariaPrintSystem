@@ -1,7 +1,8 @@
 Maria Print System
 ==================
 
-This is a print accounting and management system for Windows based on Type-3 printer model. Under the developing.
+This is a print accounting and management system for Windows based on Type-3 printer model.
+It has been used as the campus-wide print accounting system client at one of the Japanese university since 2018.
 
 Subsystems
 ----------
@@ -67,6 +68,16 @@ The tasktray program kickstart a program saved in the registry value. The argume
 The preview program print postscript file to a printer saved in the registry value.
 
     reg add "HKLM\SOFTWARE\Marbocub\MariaPrintSystem" /v "Printer" /t REG_SZ /d "Your Real Printer" /f
+
+Connecting to accounting database
+=================================
+
+This system contains only the Windows client and not contains accounting databases and servers.
+Because we know that different sites or campuses have different functional requirements for the accounting database. 
+As a solution, the system uses Web API to connect to an accounting server.
+So you can be flexibly implement the accounting server for site requirements by using Web framework and your own accounting database.
+
+If you would like to build a low-cost campus-wide print accounting system at Japanese university, please contact us for helps you.
 
 License
 =======
